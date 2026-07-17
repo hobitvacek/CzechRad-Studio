@@ -150,4 +150,3 @@ def parse_log(lines: Iterable[str]) -> ParsedLog:
             failures.append(ParseFailure(line_number, stripped, str(exc)))
 
     return ParsedLog(tuple(measurements), tuple(failures))
-
