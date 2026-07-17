@@ -30,5 +30,6 @@ build/
 # Local measurement data and exports
 *.LOG
 *.log
+!tests/fixtures/*.log
 test-data/private/
 exports/
