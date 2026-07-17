@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# QGIS and generated artifacts
+*.qgz~
+*.qgs~
+*.gpkg-shm
+*.gpkg-wal
+dist/
+build/
+*.zip
+
+# Local measurement data and exports
+*.LOG
+*.log
+test-data/private/
+exports/
