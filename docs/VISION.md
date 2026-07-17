@@ -20,7 +20,7 @@ CzechRad Studio má uživateli umožnit soustředit se na měření, nikoli na o
 1. Uživatel vloží dříve nastavenou SD kartu nebo přepne detektor do režimu přenosu dat.
 2. Plugin kartu rozpozná, bezpečně zkopíruje nové či změněné LOGy do lokálního archivu a shodný obsah znovu nekopíruje. Zdrojovou kartu nemění.
 3. Při shodě názvu a rozdílném obsahu vytvoří v archivu variantu s příponou `-1`, `-2` atd.; potom nalezne denní LOGy i soubory `NOGPS*.LOG`.
-4. Parser zachová všechna radiační měření, vyhodnotí důvěryhodnost času a polohy a zobrazí trasu i časové mezery v QGIS.
+4. Parser přečte všechny řádky a odděleně vyhodnotí radiační hodnotu, čas a polohu. NOGPS záznam s důvěryhodným časem uloží jako měření bez polohy; ostatní uvede pouze v auditním souhrnu přeskočených záznamů.
 5. Záznamy bez GPS se podle důvěryhodného času navrhnou k přiřazení k misi; uživatel na mapě a časové ose vytvoří nebo upraví venkovní i vnitřní měřicí úseky.
 6. Plugin doplní automaticky zjistitelná metadata a požádá jen o chybějící kontext.
 7. Uživatel zkontroluje mapu, statistiky a podklady pro SÚRO.
