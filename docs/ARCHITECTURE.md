@@ -7,7 +7,7 @@ CzechRad Studio je Python plugin pro QGIS 4 a Qt6. Uživatelské rozhraní použ
 ## Tok dat
 
 ```text
-Denní LOG (neměnný zdroj)
+Denní LOG + NOGPS*.LOG (neměnné zdroje)
         ↓
 Importer → Parser → Validator
         ↓
@@ -44,6 +44,7 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 - formát a verze parseru;
 - sériové číslo zařízení;
 - interval začátku a konce;
+- druh zdroje: trasový LOG / NOGPS / jiný podporovaný formát;
 - stav importu a revize.
 
 ### Measurement
@@ -51,8 +52,10 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 - ID zdrojového LOGu a pořadí záznamu;
 - čas v UTC;
 - původní radiační hodnoty bez nevratných přepočtů;
-- GPS stav, WGS84 souřadnice, výška, počet satelitů a HDOP;
-- příznaky validity a důvod vyřazení;
+- původní GPS stav, WGS84 souřadnice, výška, počet satelitů a HDOP;
+- stav polohy: `gps_valid`, `gps_invalid`, `manual` nebo `none`;
+- ručně přiřazené místo nebo geometrie oddělené od původních GPS polí;
+- samostatná validita radiačního měření, času a polohy včetně důvodů;
 - původní řádek nebo jeho otisk pro audit.
 
 ### Mission
@@ -65,7 +68,8 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 
 - vazba na misi a zdrojový LOG;
 - čas od–do a odvozený rozsah měření;
-- typ pohybu a zahrnutí do exportu;
+- typ pohybu včetně vnitřního měření a zahrnutí do exportu;
+- volitelná ruční poloha, budova, podlaží nebo popis místa;
 - výška, orientace, popis trasy a poznámky;
 - stav kontroly a revize.
 
@@ -76,6 +80,20 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 - verze exportního profilu;
 - stav koncept / připraveno / exportováno / označeno jako odeslané;
 - datum a otisk vytvořeného balíčku.
+
+## Měření bez GPS
+
+Soubory `NOGPS*.LOG` jsou plnohodnotné zdroje radiačních měření vznikající při startu bez fixu i při ztrátě GPS v budovách, podchodech nebo jiných zakrytých místech. Název souboru není důvodem k vyřazení hodnot.
+
+- Radiační hodnota, čas a poloha se validují nezávisle.
+- Příznak GPS `A` sám nestačí; nulové souřadnice, nula satelitů nebo sentinel `HDOP=9999` znamenají nedůvěryhodnou polohu.
+- Nedůvěryhodné souřadnice se uchovají pro audit, ale nepoužijí se jako geometrie mapové vrstvy.
+- Pokud je čas důvěryhodný, záznamy se podle časového intervalu navrhnou k přiřazení mezi poslední a následující část stejné mise.
+- Výchozí nebo nedůvěryhodný čas, například datum zařízení před získáním GPS času, zůstane nezařazený.
+- Uživatel může vytvořit vnitřní úsek a přiřadit mu budovu, podlaží, popis nebo ruční bod či plochu. Ruční poloha nikdy nepřepíše původní GPS pole.
+- Trasa se přes období bez GPS nespojí zavádějící přímkou; UI zobrazí časovou mezeru a počet nepřiřazených měření.
+
+Soubor NOGPS může obsahovat záznamy z více dnů. Import jej proto dělí podle důvěryhodných časových intervalů a vazby na mise, nikoli podle názvu souboru.
 
 ## Identita a aktualizace LOGu
 
@@ -96,7 +114,7 @@ Technické události se zapisují do QGIS Message Log pod značkou `CzechRad Stu
 ## Testovací strategie
 
 1. Jednotkové testy parseru a doménových pravidel bez QGIS.
-2. Testovací LOGy: normální, prázdný, poškozený, duplicitní, špatná GPS a postupně rozšiřovaný.
+2. Syntetické anonymizované testovací LOGy: normální, prázdný, poškozený, duplicitní, špatná GPS, ztráta GPS uprostřed mise, více dnů v NOGPS a postupně rozšiřovaný.
 3. Kontraktní testy povinných souborů a metadata pluginu.
 4. Integrační testy databázových migrací v dočasném GeoPackage.
 5. Ruční smoke test v podporovaných verzích QGIS 4 před vydáním ZIPu.
