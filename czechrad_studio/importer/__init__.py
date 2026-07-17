@@ -20,4 +20,3 @@ __all__ = [
     "parse_measurement_line",
     "validate_measurement",
 ]
-
