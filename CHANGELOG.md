@@ -4,9 +4,15 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+### Added
+
+- QGIS-independent domain types for CzechRad measurements.
+- Parser for CzechRad `$CZRA1` records with checksum verification and audit failures.
+- Independent validation of timestamps, radiation values and GPS trust.
+- Synthetic tests for valid GPS, NOGPS and device default dates.
+
 ### Planned
 
-- Parser CzechRad LOG 2.x.
 - Podpora `NOGPS*.LOG` jako měření bez polohy, včetně vnitřních úseků a ručního přiřazení místa.
 - Import jednoho denního LOG souboru.
 - Monitoring složky a aktualizace změněného souboru bez duplicit.
@@ -21,3 +27,4 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Dokumenty VISION, ARCHITECTURE, ROADMAP a SURO_EXPORT.
 - Základní testy kontraktu pluginu.
 - Kontrola a sjednocení licenčních informací.
+
