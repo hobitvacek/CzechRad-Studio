@@ -14,14 +14,19 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 - [ ] Specifikace a datové třídy CzechRad LOG 2.x.
 - [ ] Parser bez závislosti na QGIS.
 - [ ] Nezávislá validace kontrolních součtů, času, radiačních hodnot a GPS.
-- [ ] Rozpoznání `NOGPS*.LOG` a zachování měření bez použitelné polohy.
+- [ ] Rozpoznání `NOGPS*.LOG` a zachování měření bez použitelné polohy pouze s důvěryhodným datem a časem.
+- [ ] Přeskočení NOGPS záznamů bez důvěryhodného času s auditovatelným důvodem.
 - [ ] Import jednoho trasového LOGu a NOGPS zdroje bez vytváření falešné geometrie.
 - [ ] Syntetická anonymizovaná testovací sada včetně ztráty GPS v budově a NOGPS souboru obsahujícího více dnů.
 
-## 0.3.0 – Monitoring
+## 0.3.0 – Monitoring a import z karty
 
-- [ ] Výběr a uložení sledované složky.
+- [ ] Výběr a uložení sledované složky nebo podporované zdrojové karty.
+- [ ] Volitelný automatický import po vložení dříve nastavené karty.
+- [ ] Režim karty pouze pro čtení bez přejmenování a mazání zdrojů.
+- [ ] Ověřená atomická kopie do lokálního archivu před parsováním.
 - [ ] Detekce nových a změněných trasových i `NOGPS*.LOG` souborů.
+- [ ] Deduplikace podle SHA-256; při shodném názvu a jiném obsahu archivní přípony `-1`, `-2` atd.
 - [ ] Kontrola ustálení souboru a bezpečné opakování.
 - [ ] Aktualizace bez duplicit a bez ztráty poslední platné revize.
 
