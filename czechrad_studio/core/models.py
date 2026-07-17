@@ -80,4 +80,3 @@ class MeasurementValidation:
         """Whether the original coordinates may create map geometry."""
 
         return self.location_quality is LocationQuality.VALID
-
