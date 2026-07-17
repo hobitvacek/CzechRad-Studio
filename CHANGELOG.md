@@ -10,6 +10,7 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Podpora `NOGPS*.LOG` jako měření bez polohy, včetně vnitřních úseků a ručního přiřazení místa.
 - Import jednoho denního LOG souboru.
 - Monitoring složky a aktualizace změněného souboru bez duplicit.
+- Volitelný automatický import po vložení nastavené karty, bezpečná archivní kopie a číslování kolizí názvů.
 
 ## [0.1.0] - 2026-07-17
 
