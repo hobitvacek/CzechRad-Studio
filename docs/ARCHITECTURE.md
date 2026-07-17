@@ -120,7 +120,7 @@ Po prvním výběru zdrojové karty může uživatel zapnout automatický import
 
 ## Databáze
 
-GeoPackage je lokální autoritativní úložiště odvozených dat. Schéma bude verzované tabulkou migrací. Zápisy importu proběhnou v transakci: buď se uloží celá validní revize, nebo žádná. Původní LOG zůstává mimo databázi jako zdrojový důkaz; volitelný archiv se bude řešit samostatně.
+GeoPackage je lokální autoritativní úložiště odvozených dat. Schéma bude verzované tabulkou migrací. Zápisy importu proběhnou v transakci: buď se uloží celá validní revize, nebo žádná. Ověřená archivní kopie původního LOGu zůstává mimo GeoPackage jako zdrojový důkaz. GeoPackage uchovává její identitu, hash, importní výsledek a vazby na odvozená data.
 
 ## Logování a chyby
 
