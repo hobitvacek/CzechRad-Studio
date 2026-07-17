@@ -7,7 +7,7 @@ CzechRad Studio je Python plugin pro QGIS 4 a Qt6. Uživatelské rozhraní použ
 ## Tok dat
 
 ```text
-Denní LOG (neměnný zdroj)
+Denní LOG + NOGPS*.LOG (neměnné zdroje)
         ↓
 Importer → Parser → Validator
         ↓
@@ -44,6 +44,7 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 - formát a verze parseru;
 - sériové číslo zařízení;
 - interval začátku a konce;
+- druh zdroje: trasový LOG / NOGPS / jiný podporovaný formát;
 - stav importu a revize.
 
 ### Measurement
@@ -51,8 +52,10 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 - ID zdrojového LOGu a pořadí záznamu;
 - čas v UTC;
 - původní radiační hodnoty bez nevratných přepočtů;
-- GPS stav, WGS84 souřadnice, výška, počet satelitů a HDOP;
-- příznaky validity a důvod vyřazení;
+- původní GPS stav, WGS84 souřadnice, výška, počet satelitů a HDOP;
+- stav polohy: `gps_valid`, `gps_invalid`, `manual` nebo `none`;
+- ručně přiřazené místo nebo geometrie oddělené od původních GPS polí;
+- samostatná validita radiačního měření, času a polohy včetně důvodů;
 - původní řádek nebo jeho otisk pro audit.
 
 ### Mission
@@ -65,7 +68,8 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 
 - vazba na misi a zdrojový LOG;
 - čas od–do a odvozený rozsah měření;
-- typ pohybu a zahrnutí do exportu;
+- typ pohybu včetně vnitřního měření a zahrnutí do exportu;
+- volitelná ruční poloha, budova, podlaží nebo popis místa;
 - výška, orientace, popis trasy a poznámky;
 - stav kontroly a revize.
 
@@ -77,9 +81,38 @@ Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové 
 - stav koncept / připraveno / exportováno / označeno jako odeslané;
 - datum a otisk vytvořeného balíčku.
 
+## Měření bez GPS
+
+Soubory `NOGPS*.LOG` jsou plnohodnotné zdroje radiačních měření vznikající při startu bez fixu i při ztrátě GPS v budovách, podchodech nebo jiných zakrytých místech. Název souboru není důvodem k vyřazení hodnot.
+
+- Radiační hodnota, čas a poloha se validují nezávisle.
+- Příznak GPS `A` sám nestačí; nulové souřadnice, nula satelitů nebo sentinel `HDOP=9999` znamenají nedůvěryhodnou polohu.
+- Nedůvěryhodné souřadnice se uchovají pro audit, ale nepoužijí se jako geometrie mapové vrstvy.
+- Pokud je čas důvěryhodný, záznamy se podle časového intervalu navrhnou k přiřazení mezi poslední a následující část stejné mise.
+- Čas má samostatný stav `valid`, `untrusted` nebo `missing`. Do databáze měření se NOGPS záznam zařadí pouze se stavem `valid`.
+- Chybějící, výchozí nebo nedůvěryhodný čas, například datum zařízení před získáním GPS času, se jako měření nepoužije. Zdrojový soubor se zachová pro audit a importní protokol uvede počet a důvod přeskočení.
+- Uživatel může vytvořit vnitřní úsek a přiřadit mu budovu, podlaží, popis nebo ruční bod či plochu. Ruční poloha nikdy nepřepíše původní GPS pole.
+- Trasa se přes období bez GPS nespojí zavádějící přímkou; UI zobrazí časovou mezeru a počet nepřiřazených měření.
+
+Soubor NOGPS může obsahovat záznamy z více dnů. Import jej proto dělí podle důvěryhodných časových intervalů a vazby na mise, nikoli podle názvu souboru.
+
 ## Identita a aktualizace LOGu
 
 Název souboru sám nestačí. Import používá kombinaci zařízení, data obsaženého v LOGu a otisku obsahu. Při rozšíření denního LOGu vznikne nová revize stejného zdroje. Záznamy se párují deterministicky podle pořadí a obsahu; existující úseky zůstávají zachovány a nové záznamy se označí jako nezařazené. První implementace může bezpečně znovu parsovat celý soubor, dokud testy neprokážou správnost přírůstkového importu.
+
+## Automatický import z karty
+
+Po prvním výběru zdrojové karty může uživatel zapnout automatický import při jejím vložení. Karta je vždy zdroj pouze pro čtení: plugin na ní nepřejmenovává ani nemaže soubory a nepoužívá ji jako pracovní databázi.
+
+1. Rozpoznat nakonfigurovanou kartu nebo podporovanou strukturu a hlavičku CzechRad; neprocházet automaticky libovolné USB disky.
+2. Počkat na ustálení velikosti souborů.
+3. Kopírovat do lokálního archivu nejprve pod dočasným názvem, ověřit velikost a SHA-256 a až potom provést atomické přejmenování.
+4. Pokud už archiv obsahuje stejný hash, soubor znovu nevytvářet ani neimportovat.
+5. Pokud existuje stejný název s jiným hashem, vytvořit nejnižší volnou variantu `nazev-1.LOG`, `nazev-2.LOG` atd. Soubory, které již mají číselnou příponu, se řídí stejným pravidlem bez přepsání.
+6. V databázi uchovat původní název, cestu na zdroji, archivní název, velikost, hash a čas importu.
+7. Parser a databázi spouštět až nad ověřenou archivní kopií.
+
+Čas změny souboru na kartě není autoritativní, protože zařízení nebo FAT mohou používat výchozí hodnotu. Identita a duplicita se určují obsahem a hashem. Opakované vložení stejné karty je idempotentní.
 
 ## Monitoring
 
@@ -87,7 +120,7 @@ Název souboru sám nestačí. Import používá kombinaci zařízení, data obs
 
 ## Databáze
 
-GeoPackage je lokální autoritativní úložiště odvozených dat. Schéma bude verzované tabulkou migrací. Zápisy importu proběhnou v transakci: buď se uloží celá validní revize, nebo žádná. Původní LOG zůstává mimo databázi jako zdrojový důkaz; volitelný archiv se bude řešit samostatně.
+GeoPackage je lokální autoritativní úložiště odvozených dat. Schéma bude verzované tabulkou migrací. Zápisy importu proběhnou v transakci: buď se uloží celá validní revize, nebo žádná. Ověřená archivní kopie původního LOGu zůstává mimo GeoPackage jako zdrojový důkaz. GeoPackage uchovává její identitu, hash, importní výsledek a vazby na odvozená data.
 
 ## Logování a chyby
 
@@ -96,7 +129,7 @@ Technické události se zapisují do QGIS Message Log pod značkou `CzechRad Stu
 ## Testovací strategie
 
 1. Jednotkové testy parseru a doménových pravidel bez QGIS.
-2. Testovací LOGy: normální, prázdný, poškozený, duplicitní, špatná GPS a postupně rozšiřovaný.
+2. Syntetické anonymizované testovací LOGy: normální, prázdný, poškozený, duplicitní, špatná GPS, ztráta GPS uprostřed mise, více dnů v NOGPS a postupně rozšiřovaný.
 3. Kontraktní testy povinných souborů a metadata pluginu.
 4. Integrační testy databázových migrací v dočasném GeoPackage.
 5. Ruční smoke test v podporovaných verzích QGIS 4 před vydáním ZIPu.

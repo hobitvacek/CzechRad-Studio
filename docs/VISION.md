@@ -8,21 +8,23 @@ CzechRad Studio má uživateli umožnit soustředit se na měření, nikoli na o
 
 1. **LOG je neměnný zdroj.** Původní soubor se neupravuje a lze z něj znovu vytvořit odvozená data.
 2. **Mise je pracovní celek.** Jedna mise může zahrnovat více denních LOGů.
-3. **Úsek nese kontext měření.** Denní LOG lze rozdělit na pěší, automobilové, stacionární nebo vyřazené úseky s vlastními metadaty.
-4. **Bez duplicit a ztráty údajů.** Aktualizace LOGu zachová již popsané úseky a označí nová data jako nezařazená.
-5. **Uživatel má poslední slovo.** Automatické návrhy rozdělení, validace i export se vždy dají zkontrolovat a opravit.
-6. **Soukromí je výchozí.** Polohová data zůstávají lokální, dokud uživatel výslovně nevytvoří export nebo je neodešle.
-7. **Otevřenost a dohledatelnost.** Formáty, změny dat a exporty jsou verzované a auditovatelné.
+3. **Úsek nese kontext měření.** Denní LOG lze rozdělit na pěší, automobilové, stacionární, vnitřní nebo vyřazené úseky s vlastními metadaty.
+4. **Měření bez GPS není chyba.** Radiační hodnoty vzniklé v budově nebo při ztrátě signálu se zachovají jako měření bez polohy; souřadnice se nikdy automaticky nevymýšlejí.
+5. **Bez duplicit a ztráty údajů.** Aktualizace LOGu zachová již popsané úseky a označí nová data jako nezařazená.
+6. **Uživatel má poslední slovo.** Automatické návrhy rozdělení, přiřazení NOGPS záznamů, validace i export se vždy dají zkontrolovat a opravit.
+7. **Soukromí je výchozí.** Polohová data zůstávají lokální, dokud uživatel výslovně nevytvoří export nebo je neodešle.
+8. **Otevřenost a dohledatelnost.** Formáty, změny dat a exporty jsou verzované a auditovatelné.
 
 ## Cílový pracovní postup
 
-1. Uživatel vloží SD kartu nebo přepne detektor do režimu přenosu dat.
-2. Plugin nalezne nový či změněný denní LOG ve sledované složce.
-3. Parser a validátor vytvoří měření a zobrazí trasu v QGIS.
-4. Uživatel na mapě a časové ose vytvoří nebo upraví měřicí úseky.
-5. Plugin doplní automaticky zjistitelná metadata a požádá jen o chybějící kontext.
-6. Uživatel zkontroluje mapu, statistiky a podklady pro SÚRO.
-7. Plugin vytvoří verzovaný exportní balíček; odeslání zůstává vědomým krokem uživatele.
+1. Uživatel vloží dříve nastavenou SD kartu nebo přepne detektor do režimu přenosu dat.
+2. Plugin kartu rozpozná, bezpečně zkopíruje nové či změněné LOGy do lokálního archivu a shodný obsah znovu nekopíruje. Zdrojovou kartu nemění.
+3. Při shodě názvu a rozdílném obsahu vytvoří v archivu variantu s příponou `-1`, `-2` atd.; potom nalezne denní LOGy i soubory `NOGPS*.LOG`.
+4. Parser přečte všechny řádky a odděleně vyhodnotí radiační hodnotu, čas a polohu. NOGPS záznam s důvěryhodným časem uloží jako měření bez polohy; ostatní uvede pouze v auditním souhrnu přeskočených záznamů.
+5. Záznamy bez GPS se podle důvěryhodného času navrhnou k přiřazení k misi; uživatel na mapě a časové ose vytvoří nebo upraví venkovní i vnitřní měřicí úseky.
+6. Plugin doplní automaticky zjistitelná metadata a požádá jen o chybějící kontext.
+7. Uživatel zkontroluje mapu, statistiky a podklady pro SÚRO.
+8. Plugin vytvoří verzovaný exportní balíček; odeslání zůstává vědomým krokem uživatele.
 
 ## Mimo rozsah prvního stabilního vydání
 
