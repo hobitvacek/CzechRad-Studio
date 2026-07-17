@@ -70,4 +70,3 @@ def validate_measurement(
         radiation_valid=radiation_valid,
         issues=tuple(issues),
     )
-
