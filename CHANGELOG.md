@@ -27,4 +27,3 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Dokumenty VISION, ARCHITECTURE, ROADMAP a SURO_EXPORT.
 - Základní testy kontraktu pluginu.
 - Kontrola a sjednocení licenčních informací.
-
