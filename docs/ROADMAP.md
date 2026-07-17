@@ -13,14 +13,15 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 
 - [ ] Specifikace a datové třídy CzechRad LOG 2.x.
 - [ ] Parser bez závislosti na QGIS.
-- [ ] Validace kontrolních součtů, času, GPS a číselných polí.
-- [ ] Import jednoho LOGu do dočasné vrstvy.
-- [ ] Anonymizovaná testovací sada.
+- [ ] Nezávislá validace kontrolních součtů, času, radiačních hodnot a GPS.
+- [ ] Rozpoznání `NOGPS*.LOG` a zachování měření bez použitelné polohy.
+- [ ] Import jednoho trasového LOGu a NOGPS zdroje bez vytváření falešné geometrie.
+- [ ] Syntetická anonymizovaná testovací sada včetně ztráty GPS v budově a NOGPS souboru obsahujícího více dnů.
 
 ## 0.3.0 – Monitoring
 
 - [ ] Výběr a uložení sledované složky.
-- [ ] Detekce nových a změněných LOGů.
+- [ ] Detekce nových a změněných trasových i `NOGPS*.LOG` souborů.
 - [ ] Kontrola ustálení souboru a bezpečné opakování.
 - [ ] Aktualizace bez duplicit a bez ztráty poslední platné revize.
 
@@ -34,8 +35,10 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 ## 0.5.0 – Měřicí úseky
 
 - [ ] Rozdělení podle času a bodů v mapě.
-- [ ] Typ pohybu, výška, orientace a popis trasy.
-- [ ] Zvýraznění nezařazených nových dat.
+- [ ] Typ pohybu včetně vnitřního měření, výška, orientace a popis trasy.
+- [ ] Časové přiřazení NOGPS záznamů k misi s potvrzením uživatele.
+- [ ] Ruční přiřazení budovy, podlaží, popisu nebo geometrie bez přepsání původních GPS polí.
+- [ ] Zvýraznění nezařazených nových dat a období bez GPS.
 - [ ] Návrhy hranic podle mezer, rychlosti a zastavení.
 
 ## 0.6.0 – Podklady pro SÚRO
