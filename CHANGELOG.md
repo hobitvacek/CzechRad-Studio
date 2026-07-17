@@ -7,6 +7,7 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 ### Planned
 
 - Parser CzechRad LOG 2.x.
+- Podpora `NOGPS*.LOG` jako měření bez polohy, včetně vnitřních úseků a ručního přiřazení místa.
 - Import jednoho denního LOG souboru.
 - Monitoring složky a aktualizace změněného souboru bez duplicit.
 
