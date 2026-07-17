@@ -89,7 +89,8 @@ Soubory `NOGPS*.LOG` jsou plnohodnotné zdroje radiačních měření vznikajíc
 - Příznak GPS `A` sám nestačí; nulové souřadnice, nula satelitů nebo sentinel `HDOP=9999` znamenají nedůvěryhodnou polohu.
 - Nedůvěryhodné souřadnice se uchovají pro audit, ale nepoužijí se jako geometrie mapové vrstvy.
 - Pokud je čas důvěryhodný, záznamy se podle časového intervalu navrhnou k přiřazení mezi poslední a následující část stejné mise.
-- Výchozí nebo nedůvěryhodný čas, například datum zařízení před získáním GPS času, zůstane nezařazený.
+- Čas má samostatný stav `valid`, `untrusted` nebo `missing`. Do databáze měření se NOGPS záznam zařadí pouze se stavem `valid`.
+- Chybějící, výchozí nebo nedůvěryhodný čas, například datum zařízení před získáním GPS času, se jako měření nepoužije. Zdrojový soubor se zachová pro audit a importní protokol uvede počet a důvod přeskočení.
 - Uživatel může vytvořit vnitřní úsek a přiřadit mu budovu, podlaží, popis nebo ruční bod či plochu. Ruční poloha nikdy nepřepíše původní GPS pole.
 - Trasa se přes období bez GPS nespojí zavádějící přímkou; UI zobrazí časovou mezeru a počet nepřiřazených měření.
 
@@ -98,6 +99,20 @@ Soubor NOGPS může obsahovat záznamy z více dnů. Import jej proto dělí pod
 ## Identita a aktualizace LOGu
 
 Název souboru sám nestačí. Import používá kombinaci zařízení, data obsaženého v LOGu a otisku obsahu. Při rozšíření denního LOGu vznikne nová revize stejného zdroje. Záznamy se párují deterministicky podle pořadí a obsahu; existující úseky zůstávají zachovány a nové záznamy se označí jako nezařazené. První implementace může bezpečně znovu parsovat celý soubor, dokud testy neprokážou správnost přírůstkového importu.
+
+## Automatický import z karty
+
+Po prvním výběru zdrojové karty může uživatel zapnout automatický import při jejím vložení. Karta je vždy zdroj pouze pro čtení: plugin na ní nepřejmenovává ani nemaže soubory a nepoužívá ji jako pracovní databázi.
+
+1. Rozpoznat nakonfigurovanou kartu nebo podporovanou strukturu a hlavičku CzechRad; neprocházet automaticky libovolné USB disky.
+2. Počkat na ustálení velikosti souborů.
+3. Kopírovat do lokálního archivu nejprve pod dočasným názvem, ověřit velikost a SHA-256 a až potom provést atomické přejmenování.
+4. Pokud už archiv obsahuje stejný hash, soubor znovu nevytvářet ani neimportovat.
+5. Pokud existuje stejný název s jiným hashem, vytvořit nejnižší volnou variantu `nazev-1.LOG`, `nazev-2.LOG` atd. Soubory, které již mají číselnou příponu, se řídí stejným pravidlem bez přepsání.
+6. V databázi uchovat původní název, cestu na zdroji, archivní název, velikost, hash a čas importu.
+7. Parser a databázi spouštět až nad ověřenou archivní kopií.
+
+Čas změny souboru na kartě není autoritativní, protože zařízení nebo FAT mohou používat výchozí hodnotu. Identita a duplicita se určují obsahem a hashem. Opakované vložení stejné karty je idempotentní.
 
 ## Monitoring
 
