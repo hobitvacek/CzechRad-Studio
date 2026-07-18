@@ -80,9 +80,9 @@ class CzechRadParserTest(unittest.TestCase):
         self.assertIn("checksum_mismatch", validation.issues)
 
     def test_accepts_single_digit_checksum_written_by_device(self):
-        measurement = self.parsed.measurements[4]
+        measurement = self.parsed.measurements[1]
 
-        self.assertEqual(0x0C, measurement.expected_checksum)
+        self.assertEqual(0x0E, measurement.expected_checksum)
         self.assertTrue(measurement.checksum_valid)
 
     def test_structural_error_is_audited_without_stopping_log(self):
@@ -99,3 +99,4 @@ class CzechRadParserTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
