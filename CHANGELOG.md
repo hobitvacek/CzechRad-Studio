@@ -10,6 +10,8 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Parser for CzechRad `$CZRA1` records with checksum verification and audit failures.
 - Independent validation of timestamps, radiation values and GPS trust.
 - Synthetic tests for valid GPS, NOGPS and device default dates.
+- Correlation of a cumulative multi-day `NOGPS.LOG` with one daily track.
+- Detection of internal GPS-loss candidates with trusted entry and exit anchors.
 
 ### Planned
 
@@ -27,3 +29,4 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Dokumenty VISION, ARCHITECTURE, ROADMAP a SURO_EXPORT.
 - Základní testy kontraktu pluginu.
 - Kontrola a sjednocení licenčních informací.
+
