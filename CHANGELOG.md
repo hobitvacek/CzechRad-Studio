@@ -6,6 +6,11 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ### Added
 
+- CzechRad conversion from CPM and five-second counts to µSv/h using the documented 328.5 CPM calibration.
+- Neutral five-band map renderer switchable between µSv/h and CPM whose classes appear in the QGIS layer legend.
+- Optional map-only aggregation of stable prolonged stops into one average point.
+- Conservative preservation of all stop points when a sudden or sustained radiation increase is detected.
+
 - QGIS-independent domain types for CzechRad measurements.
 - Parser for CzechRad `$CZRA1` records with checksum verification and audit failures.
 - Independent validation of timestamps, radiation values and GPS trust.
