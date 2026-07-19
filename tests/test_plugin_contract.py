@@ -55,6 +55,12 @@ class PluginContractTest(unittest.TestCase):
         for relative_path in ("ui/import_dialog.py", "ui/layers.py"):
             self.assertTrue((PLUGIN / relative_path).is_file(), relative_path)
 
+    def test_zoom_uses_qgis_crs_aware_action(self):
+        source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
+
+        self.assertIn("zoomToActiveLayer()", source)
+        self.assertNotIn("setExtent(layers.track.extent())", source)
+
 
 if __name__ == "__main__":
     unittest.main()
