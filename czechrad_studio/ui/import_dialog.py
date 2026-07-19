@@ -6,6 +6,8 @@ from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
+    QCheckBox,
+    QComboBox,
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
@@ -27,12 +29,23 @@ class ImportDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("CzechRad Studio – načíst měření")
         self.setModal(True)
-        self.resize(680, 190)
+        self.resize(720, 230)
 
         self.track_edit = QLineEdit(self)
         self.track_edit.setPlaceholderText("Denní soubor, například 07960719.LOG")
         self.nogps_edit = QLineEdit(self)
         self.nogps_edit.setPlaceholderText("Volitelné: kumulativní NOGPS.LOG")
+        self.collapse_stops_checkbox = QCheckBox(
+            "Sloučit stabilní dlouhá zastavení do jednoho průměrného bodu", self
+        )
+        self.collapse_stops_checkbox.setChecked(True)
+        self.collapse_stops_checkbox.setToolTip(
+            "Původní LOG se nemění. Při nárůstu nebo skoku radiace zůstanou "
+            "všechny body zobrazené."
+        )
+        self.display_unit_combo = QComboBox(self)
+        self.display_unit_combo.addItem("µSv/h – stejně jako displej přístroje", "usvh")
+        self.display_unit_combo.addItem("CPM – původní hodnota z LOGu", "cpm")
 
         track_button = QPushButton("Vybrat…", self)
         track_button.clicked.connect(self._choose_track)
@@ -42,6 +55,7 @@ class ImportDialog(QDialog):
         form = QFormLayout()
         form.addRow("Denní LOG:", self._path_row(self.track_edit, track_button))
         form.addRow("NOGPS.LOG:", self._path_row(self.nogps_edit, nogps_button))
+        form.addRow("Barevná legenda:", self.display_unit_combo)
 
         note = QLabel(
             "Denní LOG vytvoří vrstvu bodů. Pokud vybereš také NOGPS.LOG, "
@@ -62,6 +76,7 @@ class ImportDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(note)
         layout.addLayout(form)
+        layout.addWidget(self.collapse_stops_checkbox)
         layout.addStretch(1)
         layout.addWidget(buttons)
 
@@ -82,6 +97,14 @@ class ImportDialog(QDialog):
     def nogps_path(self) -> str | None:
         value = self.nogps_edit.text().strip()
         return value or None
+
+    @property
+    def collapse_stops(self) -> bool:
+        return self.collapse_stops_checkbox.isChecked()
+
+    @property
+    def display_unit(self) -> str:
+        return self.display_unit_combo.currentData()
 
     def _initial_folder(self) -> str:
         stored = QSettings().value(self.SETTINGS_KEY, "", type=str)
