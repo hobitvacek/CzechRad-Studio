@@ -4,9 +4,11 @@ Copyright (C) 2026 CzechRad Studio contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 """
 
-from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QDialog, QMessageBox
 
 from .core.constants import PLUGIN_NAME
+from .importer import analyze_log_files
+from .ui import ImportDialog, add_analysis_layers
 
 
 class CzechRadStudioPlugin:
@@ -34,8 +36,36 @@ class CzechRadStudioPlugin:
         self.action = None
 
     def run(self):
+        dialog = ImportDialog(self.iface.mainWindow())
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        try:
+            analysis = analyze_log_files(dialog.track_path, dialog.nogps_path)
+            layers = add_analysis_layers(analysis, dialog.track_path)
+            self.iface.setActiveLayer(layers.track)
+            self.iface.mapCanvas().setExtent(layers.track.extent())
+            self.iface.mapCanvas().refresh()
+        except Exception as exc:  # QGIS must report file and provider failures to user
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                f"Měření se nepodařilo načíst:\n\n{exc}",
+            )
+            return
+
+        correlation = analysis.nogps_correlation
+        matched_nogps = len(correlation.matched) if correlation is not None else 0
         QMessageBox.information(
             self.iface.mainWindow(),
             PLUGIN_NAME,
-            "Technický základ pluginu je načten. Import měření bude doplněn v další verzi.",
+            "Měření bylo načteno.\n\n"
+            f"Datum (UTC): {analysis.expected_date.isoformat()}\n"
+            f"Záznamů v denním LOGu: {len(analysis.track.measurements)}\n"
+            f"Bodů v mapě: {len(analysis.geometry_measurements)}\n"
+            f"Přiřazených NOGPS záznamů: {matched_nogps}\n"
+            f"Kandidátů zastavení: {len(analysis.stop_candidates)}\n"
+            f"Kandidátů ztráty GPS: {len(analysis.location_losses)}\n"
+            f"Nezpracovaných řádků: {analysis.failure_count}",
         )
+
