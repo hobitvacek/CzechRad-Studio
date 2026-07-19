@@ -44,8 +44,9 @@ class CzechRadStudioPlugin:
             analysis = analyze_log_files(dialog.track_path, dialog.nogps_path)
             layers = add_analysis_layers(analysis, dialog.track_path)
             self.iface.setActiveLayer(layers.track)
-            self.iface.mapCanvas().setExtent(layers.track.extent())
-            self.iface.mapCanvas().refresh()
+            # QGIS transforms the layer's WGS 84 extent to the canvas CRS
+            # (commonly Web Mercator for the OpenStreetMap template).
+            self.iface.zoomToActiveLayer()
         except Exception as exc:  # QGIS must report file and provider failures to user
             QMessageBox.critical(
                 self.iface.mainWindow(),
