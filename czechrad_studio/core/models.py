@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
+from .radiation import cpm_to_usvh, interval_counts_to_usvh
+
 
 class TimeQuality(str, Enum):
     """Trust assigned to a measurement timestamp."""
@@ -54,6 +56,18 @@ class CzechRadMeasurement:
 
         return self.hdop_raw / 100.0
 
+    @property
+    def dose_rate_usvh(self) -> float:
+        """Stable one-minute dose-rate estimate shown by CzechRad."""
+
+        return cpm_to_usvh(self.cpm)
+
+    @property
+    def interval_dose_rate_usvh(self) -> float:
+        """Faster, noisier estimate from the latest five-second interval."""
+
+        return interval_counts_to_usvh(self.interval_counts)
+
 
 @dataclass(frozen=True, slots=True)
 class MeasurementValidation:
@@ -80,3 +94,4 @@ class MeasurementValidation:
         """Whether the original coordinates may create map geometry."""
 
         return self.location_quality is LocationQuality.VALID
+

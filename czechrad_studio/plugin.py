@@ -42,7 +42,12 @@ class CzechRadStudioPlugin:
 
         try:
             analysis = analyze_log_files(dialog.track_path, dialog.nogps_path)
-            layers = add_analysis_layers(analysis, dialog.track_path)
+            layers = add_analysis_layers(
+                analysis,
+                dialog.track_path,
+                collapse_stops=dialog.collapse_stops,
+                display_unit=dialog.display_unit,
+            )
             self.iface.setActiveLayer(layers.track)
             # QGIS transforms the layer's WGS 84 extent to the canvas CRS
             # (commonly Web Mercator for the OpenStreetMap template).
