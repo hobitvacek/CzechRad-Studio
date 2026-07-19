@@ -15,6 +15,7 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Detection of prolonged spatial stop candidates without QGIS dependencies.
 - QGIS import dialog for a daily LOG and optional cumulative `NOGPS.LOG`.
 - Memory layers for mapped measurements and stop/GPS-loss candidates.
+- CRS-aware zoom to imported WGS 84 tracks in OpenStreetMap projects.
 
 ### Planned
 
