@@ -1,5 +1,5 @@
 """Project-wide constants."""
 
 PLUGIN_NAME = "CzechRad Studio"
-PLUGIN_VERSION = "0.2.0"
+PLUGIN_VERSION = "0.2.1"
 
