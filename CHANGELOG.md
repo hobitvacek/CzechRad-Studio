@@ -12,6 +12,7 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Synthetic tests for valid GPS, NOGPS and device default dates.
 - Correlation of a cumulative multi-day `NOGPS.LOG` with one daily track.
 - Detection of internal GPS-loss candidates with trusted entry and exit anchors.
+- Detection of prolonged spatial stop candidates without QGIS dependencies.
 
 ### Planned
 
