@@ -6,6 +6,12 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ### Added
 
+- Read-only monitoring of a configured card or LOG folder every five seconds.
+- Import only after two unchanged file observations.
+- SHA-256 deduplication, verified archive copies and collision numbering (`-1`, `-2`, …).
+- Automatic replacement of an in-session map layer after a changed daily LOG is safely archived.
+- Persistent QGIS settings for source folder, archive folder and monitoring state.
+
 - Comparison of prolonged stops with the nearby route radiation baseline.
 - Highlighting only stops elevated by at least 30% and 0.03 µSv/h as possible stationary measurements.
 - Preservation of all points in an elevated stop while ordinary GPS-drift clusters remain eligible for map-only aggregation.
