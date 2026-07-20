@@ -52,8 +52,19 @@ class PluginContractTest(unittest.TestCase):
         self.assertEqual(PLUGIN_VERSION, parser["general"]["version"])
 
     def test_first_import_ui_files_exist(self):
-        for relative_path in ("ui/import_dialog.py", "ui/layers.py"):
+        for relative_path in (
+            "ui/import_dialog.py",
+            "ui/layers.py",
+            "ui/monitor_dialog.py",
+            "monitoring/files.py",
+        ):
             self.assertTrue((PLUGIN / relative_path).is_file(), relative_path)
+
+    def test_monitoring_uses_qt_timer_and_read_only_archive_service(self):
+        source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
+
+        self.assertIn("QTimer", source)
+        self.assertIn("archive_ready_logs", source)
 
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
