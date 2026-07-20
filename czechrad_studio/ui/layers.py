@@ -18,7 +18,7 @@ from qgis.core import (
 
 from ..core.radiation import CPM_BANDS, RADIATION_BANDS
 from ..importer.session import ImportAnalysis
-from ..missions.aggregation import summarize_stable_stop
+from ..missions.aggregation import assess_stop_radiation, summarize_stable_stop
 
 
 @dataclass(frozen=True, slots=True)
@@ -90,7 +90,9 @@ def _track_layer(
     collapsed_measurements = set()
     if collapse_stops:
         for candidate in analysis.stop_candidates:
-            summary = summarize_stable_stop(candidate)
+            summary = summarize_stable_stop(
+                candidate, analysis.geometry_measurements
+            )
             if summary is not None:
                 summaries.append(summary)
                 collapsed_measurements.update(id(item) for item in candidate.measurements)
@@ -154,7 +156,15 @@ def _track_layer(
 
 
 def _candidate_layer(analysis: ImportAnalysis, name: str) -> QgsVectorLayer | None:
-    if not analysis.stop_candidates and not analysis.location_losses:
+    elevated_stops = []
+    for candidate in analysis.stop_candidates:
+        assessment = assess_stop_radiation(
+            candidate, analysis.geometry_measurements
+        )
+        if assessment is not None and assessment.elevated:
+            elevated_stops.append((candidate, assessment))
+
+    if not elevated_stops and not analysis.location_losses:
         return None
 
     layer = QgsVectorLayer("Point?crs=EPSG:4326", name, "memory")
@@ -167,12 +177,16 @@ def _candidate_layer(analysis: ImportAnalysis, name: str) -> QgsVectorLayer | No
             QgsField("minutes", QMetaType.Type.Double),
             QgsField("radius_m", QMetaType.Type.Double),
             QgsField("records", QMetaType.Type.Int),
+            QgsField("baseline", QMetaType.Type.Double),
+            QgsField("stop_cpm", QMetaType.Type.Double),
+            QgsField("increase_pct", QMetaType.Type.Double),
+            QgsField("dose_usvh", QMetaType.Type.Double),
         ]
     )
     layer.updateFields()
 
     features = []
-    for candidate in analysis.stop_candidates:
+    for candidate, assessment in elevated_stops:
         feature = QgsFeature(layer.fields())
         feature.setGeometry(
             QgsGeometry.fromPointXY(
@@ -181,12 +195,16 @@ def _candidate_layer(analysis: ImportAnalysis, name: str) -> QgsVectorLayer | No
         )
         feature.setAttributes(
             [
-                "stop_candidate",
+                "possible_stationary_measurement",
                 candidate.start.isoformat(),
                 candidate.end.isoformat(),
                 candidate.duration.total_seconds() / 60,
                 candidate.radius_p95_m,
                 len(candidate.measurements),
+                assessment.baseline_cpm,
+                assessment.stop_average_cpm,
+                assessment.increase_ratio * 100,
+                assessment.comparison_usvh,
             ]
         )
         features.append(feature)
@@ -205,6 +223,10 @@ def _candidate_layer(analysis: ImportAnalysis, name: str) -> QgsVectorLayer | No
                 candidate.duration.total_seconds() / 60,
                 None,
                 len(candidate.measurements),
+                None,
+                None,
+                None,
+                None,
             ]
         )
         features.append(feature)

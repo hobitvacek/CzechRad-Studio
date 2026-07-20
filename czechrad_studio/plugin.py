@@ -8,6 +8,7 @@ from qgis.PyQt.QtWidgets import QAction, QDialog, QMessageBox
 
 from .core.constants import PLUGIN_NAME
 from .importer import analyze_log_files
+from .missions import assess_stop_radiation
 from .ui import ImportDialog, add_analysis_layers
 
 
@@ -62,6 +63,13 @@ class CzechRadStudioPlugin:
 
         correlation = analysis.nogps_correlation
         matched_nogps = len(correlation.matched) if correlation is not None else 0
+        elevated_stops = sum(
+            assessment is not None and assessment.elevated
+            for assessment in (
+                assess_stop_radiation(candidate, analysis.geometry_measurements)
+                for candidate in analysis.stop_candidates
+            )
+        )
         QMessageBox.information(
             self.iface.mainWindow(),
             PLUGIN_NAME,
@@ -71,6 +79,7 @@ class CzechRadStudioPlugin:
             f"Bodů v mapě: {len(analysis.geometry_measurements)}\n"
             f"Přiřazených NOGPS záznamů: {matched_nogps}\n"
             f"Kandidátů zastavení: {len(analysis.stop_candidates)}\n"
+            f"Možných stacionárních měření: {elevated_stops}\n"
             f"Kandidátů ztráty GPS: {len(analysis.location_losses)}\n"
             f"Nezpracovaných řádků: {analysis.failure_count}",
         )

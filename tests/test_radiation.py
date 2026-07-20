@@ -4,7 +4,11 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from czechrad_studio.core import CzechRadMeasurement, cpm_to_usvh
-from czechrad_studio.missions import StopCandidate, summarize_stable_stop
+from czechrad_studio.missions import (
+    StopCandidate,
+    assess_stop_radiation,
+    summarize_stable_stop,
+)
 
 
 def measurement(index: int, cpm: int) -> CzechRadMeasurement:
@@ -40,6 +44,18 @@ def candidate(values):
     )
 
 
+def contextual_track(stop, before_cpm=40, after_cpm=42):
+    before = tuple(
+        measurement(-index, before_cpm + index % 2) for index in range(1, 19)
+    )
+    after_start = len(stop.measurements)
+    after = tuple(
+        measurement(after_start + index, after_cpm - index % 2)
+        for index in range(1, 19)
+    )
+    return before + stop.measurements + after
+
+
 class RadiationTest(unittest.TestCase):
     def test_czechrad_calibration_matches_documented_factor(self):
         self.assertAlmostEqual(1.0, cpm_to_usvh(328.5))
@@ -61,6 +77,37 @@ class RadiationTest(unittest.TestCase):
 
     def test_sustained_radiation_rise_remains_expanded(self):
         self.assertIsNone(summarize_stable_stop(candidate([40, 46, 52, 58])))
+
+    def test_ordinary_stop_is_not_marked_against_local_background(self):
+        stop = candidate([40, 41, 39, 42, 40, 41] * 6)
+        track = contextual_track(stop)
+
+        assessment = assess_stop_radiation(stop, track)
+
+        self.assertIsNotNone(assessment)
+        self.assertFalse(assessment.elevated)
+        self.assertIsNotNone(summarize_stable_stop(stop, track))
+
+    def test_elevated_stop_is_marked_and_not_aggregated(self):
+        stop = candidate([58, 60, 61, 59, 62, 60] * 6)
+        track = contextual_track(stop)
+
+        assessment = assess_stop_radiation(stop, track)
+
+        self.assertTrue(assessment.elevated)
+        self.assertGreaterEqual(assessment.increase_ratio, 0.30)
+        self.assertIsNone(summarize_stable_stop(stop, track))
+
+    def test_single_noisy_peak_does_not_mark_a_stop(self):
+        stop = candidate([40] * 15 + [100] + [40] * 20)
+        assessment = assess_stop_radiation(stop, contextual_track(stop))
+
+        self.assertFalse(assessment.elevated)
+
+    def test_missing_surrounding_context_is_not_claimed_as_elevated(self):
+        stop = candidate([60] * 36)
+
+        self.assertIsNone(assess_stop_radiation(stop, stop.measurements))
 
 
 if __name__ == "__main__":
