@@ -6,6 +6,10 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ### Added
 
+- Comparison of prolonged stops with the nearby route radiation baseline.
+- Highlighting only stops elevated by at least 30% and 0.03 µSv/h as possible stationary measurements.
+- Preservation of all points in an elevated stop while ordinary GPS-drift clusters remain eligible for map-only aggregation.
+
 - CzechRad conversion from CPM and five-second counts to µSv/h using the documented 328.5 CPM calibration.
 - Neutral five-band map renderer switchable between µSv/h and CPM whose classes appear in the QGIS layer legend.
 - Optional map-only aggregation of stable prolonged stops into one average point.
