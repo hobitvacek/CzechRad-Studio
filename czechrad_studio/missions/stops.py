@@ -1,5 +1,7 @@
 """Detect spatially bounded stop candidates in a trusted GPS track."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from math import asin, cos, radians, sin, sqrt

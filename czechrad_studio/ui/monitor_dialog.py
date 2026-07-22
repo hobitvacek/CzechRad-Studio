@@ -1,5 +1,7 @@
 """Settings dialog for read-only card monitoring and local archiving."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from qgis.PyQt.QtCore import QSettings

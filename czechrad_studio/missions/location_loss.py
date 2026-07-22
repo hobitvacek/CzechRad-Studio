@@ -1,5 +1,7 @@
 """Detect candidates for indoor or otherwise GPS-obscured measurement."""
 
+from __future__ import annotations
+
 from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
 from datetime import datetime, timedelta
