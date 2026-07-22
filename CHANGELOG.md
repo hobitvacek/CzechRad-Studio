@@ -4,6 +4,9 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Fixed QGIS 3.34 / Qt 5 field creation on Linux by selecting QVariant field
+  types from the actual Qt major version instead of the presence of a scoped
+  QMetaType enum.
 - Corrected the default µSv/h map mode to use the device's latest five-second
   count, while retaining a separate smoothed one-minute CPM mode.
 - Added explicit device detection for CzechRad `CZRA1`, legacy CzechRad

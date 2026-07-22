@@ -42,9 +42,16 @@ def load_compat(*, qt6):
             pass
 
         gui.QAction = QAction
+        core.QT_VERSION_STR = "6.8.0"
     else:
         class QMetaType:
-            pass
+            # PyQt 5.15 can expose this scoped enum even though QGIS 3
+            # QgsField requires QVariant.Type.
+            class Type:
+                QString = "wrong-qstring6-style"
+                Int = "wrong-int6-style"
+                Double = "wrong-double6-style"
+                Bool = "wrong-bool6-style"
 
         class QDialog:
             Accepted = 1
@@ -58,6 +65,7 @@ def load_compat(*, qt6):
             pass
 
         widgets.QAction = QAction
+        core.QT_VERSION_STR = "5.15.15"
 
     class QVariant:
         String = "string5"
