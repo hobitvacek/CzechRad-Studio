@@ -4,6 +4,7 @@ import shutil
 import sqlite3
 import tempfile
 import unittest
+from datetime import timezone
 from pathlib import Path
 
 from czechrad_studio.database import (
@@ -12,7 +13,8 @@ from czechrad_studio.database import (
     SCHEMA_VERSION,
 )
 from czechrad_studio.database.schema import GPKG_APPLICATION_ID
-from czechrad_studio.importer import analyze_log_files
+from czechrad_studio.importer import analyze_log_files, calculate_checksum
+from czechrad_studio.segments import ProposalType, SegmentType
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "czechrad_sample.log"
@@ -50,6 +52,8 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual(GPKG_APPLICATION_ID, application_id)
         self.assertIn("measurements", contents)
         self.assertIn("missions", contents)
+        self.assertIn("segment_proposals", contents)
+        self.assertIn("measurement_segments", contents)
         self.assertIn("device_type", device_columns)
         self.assertIn("device_family", device_columns)
         self.assertIn("calibration_cpm_per_usvh", device_columns)
@@ -78,6 +82,59 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual("Víkend v Ostravě", mission.name)
         self.assertEqual("active", mission.status)
         self.assertEqual((mission,), self.repository.list_missions())
+
+    def test_user_segment_survives_new_log_revision(self):
+        mission = self.repository.create_mission("Úseky")
+        analysis = analyze_log_files(self.track)
+        stored = self.repository.store_import(
+            analysis, self.track, mission_id=mission.id
+        )
+        times = [item.timestamp for item in analysis.track.measurements]
+        segment = self.repository.create_segment(
+            stored.source_log_id, min(times), max(times), mission_id=mission.id,
+            segment_type=SegmentType.WALKING, title="Pěší část",
+        )
+
+        with self.track.open("a", encoding="utf-8") as handle:
+            handle.write("\n# expanded daily revision\n")
+        revised = self.repository.store_import(
+            analyze_log_files(self.track), self.track, mission_id=mission.id
+        )
+
+        self.assertEqual(ImportDisposition.REVISED, revised.disposition)
+        segments = self.repository.list_segments(stored.source_log_id)
+        self.assertEqual(1, len(segments))
+        self.assertEqual(segment.id, segments[0].id)
+        self.assertEqual(SegmentType.WALKING, segments[0].segment_type)
+        self.assertEqual(timezone.utc, segments[0].start.tzinfo)
+
+    def test_recording_gap_proposal_is_stored_for_current_revision(self):
+        gap_track = self.root / "07960722.LOG"
+        payloads = (
+            "CZRA1,TEST,2026-07-22T08:00:00Z,40,3,100,A,"
+            "5000.0000,N,01400.0000,E,250.00,A,8,100",
+            "CZRA1,TEST,2026-07-22T08:10:00Z,41,4,104,A,"
+            "5000.0100,N,01400.0100,E,250.00,A,8,100",
+        )
+        gap_track.write_text(
+            "\n".join(
+                f"${payload}*{calculate_checksum(payload):X}"
+                for payload in payloads
+            ) + "\n",
+            encoding="utf-8",
+        )
+
+        stored = self.repository.store_import(
+            analyze_log_files(gap_track), gap_track
+        )
+        proposals = self.repository.list_current_segment_proposals(
+            stored.source_log_id
+        )
+
+        self.assertEqual(1, stored.proposal_count)
+        self.assertEqual(1, len(proposals))
+        self.assertEqual(ProposalType.RECORDING_GAP, proposals[0].proposal_type)
+        self.assertEqual(stored.revision_id, proposals[0].revision_id)
 
     def test_same_import_is_not_duplicated_and_changed_file_is_revision(self):
         mission = self.repository.create_mission("Testovací mise")

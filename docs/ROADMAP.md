@@ -43,7 +43,9 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 - [ ] Rozdělení podle času a bodů v mapě.
 - [ ] Typ pohybu, výška, orientace a popis trasy.
 - [ ] Zvýraznění nezařazených nových dat.
-- [ ] Návrhy hranic podle mezer, rychlosti a zastavení.
+- [x] Databázový model návrhů a uživatelských úseků odolný vůči revizím LOGu.
+- [x] Návrhy podle delších mezer, zastavení a ztráty GPS.
+- [ ] Doplnění návrhů podle rychlosti po ověření na více přístrojích a trasách.
 
 ## 0.6.0 – Podklady pro SÚRO
 

@@ -15,6 +15,12 @@ from ..core.models import MeasurementValidation, TimeQuality
 from ..importer.session import ImportAnalysis
 from ..importer.validation import validate_measurement
 from ..missions.model import Mission
+from ..segments import (
+    MeasurementSegment,
+    SegmentProposal,
+    SegmentType,
+    propose_segments,
+)
 from .schema import SCHEMA_VERSION, migrate, utc_now_text
 
 
@@ -33,6 +39,7 @@ class StoredImport:
     revision_id: str
     disposition: ImportDisposition
     measurement_count: int
+    proposal_count: int
 
 
 def _parse_datetime(value: str | None) -> datetime | None:
@@ -199,6 +206,7 @@ class GeoPackageRepository:
         revision_id = ""
 
         measurement_count = len(analysis.track_validations) + len(matched_nogps)
+        proposals = propose_segments(analysis)
 
         connection = self._connect()
         try:
@@ -269,6 +277,10 @@ class GeoPackageRepository:
                         revision_id=same["id"],
                         disposition=ImportDisposition.UNCHANGED,
                         measurement_count=same["measurement_count"],
+                        proposal_count=connection.execute(
+                            "SELECT COUNT(*) FROM segment_proposals WHERE revision_id = ?",
+                            (same["id"],),
+                        ).fetchone()[0],
                     )
 
                 had_revision = connection.execute(
@@ -306,6 +318,9 @@ class GeoPackageRepository:
                         sequence,
                         validate_measurement(measurement, expected_date=analysis.expected_date),
                     )
+                self._insert_segment_proposals(
+                    connection, source_log_id, revision_id, proposals, imported_at
+                )
                 connection.execute(
                     "UPDATE source_logs SET updated_at_utc = ? WHERE id = ?",
                     (imported_at, source_log_id),
@@ -316,6 +331,7 @@ class GeoPackageRepository:
                     revision_id=revision_id,
                     disposition=ImportDisposition.REVISED if had_revision else ImportDisposition.CREATED,
                     measurement_count=measurement_count,
+                    proposal_count=len(proposals),
                 )
         finally:
             connection.close()
@@ -379,6 +395,139 @@ class GeoPackageRepository:
             WHERE id = ?
             """,
             (started, started, ended, ended, now, mission_id),
+        )
+
+    @staticmethod
+    def _insert_segment_proposals(
+        connection: sqlite3.Connection,
+        source_log_id: str,
+        revision_id: str,
+        proposals: tuple[SegmentProposal, ...],
+        created_at: str,
+    ) -> None:
+        for proposal in proposals:
+            connection.execute(
+                """
+                INSERT INTO segment_proposals
+                (id, source_log_id, revision_id, proposal_type, started_at_utc,
+                 ended_at_utc, confidence, reason, sample_count, center_latitude,
+                 center_longitude, created_at_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(uuid4()), source_log_id, revision_id,
+                    proposal.proposal_type.value,
+                    _utc_timestamp(proposal.start), _utc_timestamp(proposal.end),
+                    proposal.confidence, proposal.reason, proposal.sample_count,
+                    proposal.center_latitude, proposal.center_longitude, created_at,
+                ),
+            )
+
+    def list_current_segment_proposals(
+        self, source_log_id: str
+    ) -> tuple[SegmentProposal, ...]:
+        """Return proposals belonging only to the current LOG revision."""
+
+        from ..segments import ProposalType
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT p.* FROM segment_proposals p
+                JOIN source_log_revisions r ON r.id = p.revision_id
+                WHERE p.source_log_id = ? AND r.is_current = 1
+                ORDER BY p.started_at_utc, p.proposal_type
+                """,
+                (source_log_id,),
+            ).fetchall()
+        return tuple(
+            SegmentProposal(
+                id=row["id"],
+                source_log_id=row["source_log_id"],
+                revision_id=row["revision_id"],
+                proposal_type=ProposalType(row["proposal_type"]),
+                start=_parse_datetime(row["started_at_utc"]),
+                end=_parse_datetime(row["ended_at_utc"]),
+                confidence=row["confidence"],
+                reason=row["reason"],
+                sample_count=row["sample_count"],
+                center_latitude=row["center_latitude"],
+                center_longitude=row["center_longitude"],
+            )
+            for row in rows
+        )
+
+    def create_segment(
+        self,
+        source_log_id: str,
+        start: datetime,
+        end: datetime,
+        *,
+        mission_id: str | None = None,
+        segment_type: SegmentType = SegmentType.UNCLASSIFIED,
+        title: str = "",
+    ) -> MeasurementSegment:
+        """Create a stable draft segment which survives later LOG revisions."""
+
+        if end < start:
+            raise ValueError("Konec úseku nesmí být před jeho začátkem.")
+        segment_id = str(uuid4())
+        now = utc_now_text()
+        with self._connection() as connection:
+            migrate(connection)
+            if connection.execute(
+                "SELECT 1 FROM source_logs WHERE id = ?", (source_log_id,)
+            ).fetchone() is None:
+                raise KeyError(f"Zdrojový LOG {source_log_id} nebyl nalezen.")
+            if mission_id is not None and connection.execute(
+                "SELECT 1 FROM missions WHERE id = ?", (mission_id,)
+            ).fetchone() is None:
+                raise KeyError(f"Mise {mission_id} nebyla nalezena.")
+            connection.execute(
+                """
+                INSERT INTO measurement_segments
+                (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
+                 segment_type, title, created_at_utc, updated_at_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    segment_id, source_log_id, mission_id,
+                    _utc_timestamp(start), _utc_timestamp(end),
+                    segment_type.value, title.strip(), now, now,
+                ),
+            )
+        return next(
+            item for item in self.list_segments(source_log_id)
+            if item.id == segment_id
+        )
+
+    def list_segments(self, source_log_id: str) -> tuple[MeasurementSegment, ...]:
+        """List stable user segments independently from automatic proposals."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT * FROM measurement_segments WHERE source_log_id = ?
+                ORDER BY started_at_utc, ended_at_utc, id
+                """,
+                (source_log_id,),
+            ).fetchall()
+        return tuple(
+            MeasurementSegment(
+                id=row["id"], source_log_id=row["source_log_id"],
+                mission_id=row["mission_id"],
+                start=_parse_datetime(row["started_at_utc"]),
+                end=_parse_datetime(row["ended_at_utc"]),
+                segment_type=SegmentType(row["segment_type"]),
+                title=row["title"], status=row["status"],
+                include_in_suro=bool(row["include_in_suro"]),
+                detector_height_m=row["detector_height_m"],
+                detector_orientation=row["detector_orientation"],
+                route_description=row["route_description"], notes=row["notes"],
+            )
+            for row in rows
         )
 
     def current_measurement_count(self, source_log_id: str) -> int:

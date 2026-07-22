@@ -78,6 +78,11 @@ vyhlazenou hodnotou.
 - výška, orientace, popis trasy a poznámky;
 - stav kontroly a revize.
 
+Automatické návrhy jsou uloženy zvlášť v `segment_proposals` a vždy patří ke
+konkrétní revizi denního LOGu. Potvrzené či ručně vytvořené úseky jsou v
+`measurement_segments` navázané na stabilní `source_log_id`; nová revize LOGu
+je proto nesmaže. Návrh nikdy automaticky neurčuje definitivní význam úseku.
+
 ### SuroSubmission
 
 - vazba na misi a vybrané úseky;

@@ -4,6 +4,12 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Added schema version 3 with revision-scoped automatic segment proposals and
+  stable user-owned measurement segments.
+- Added conservative proposals for prolonged stops, internal GPS-loss periods
+  and recording gaps of at least five minutes.
+- Preserved user-created segment boundaries and metadata across later revisions
+  of the same daily LOG.
 - Fixed QGIS 3.34 / Qt 5 field creation on Linux by selecting QVariant field
   types from the actual Qt major version instead of the presence of a scoped
   QMetaType enum.
