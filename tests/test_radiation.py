@@ -19,11 +19,11 @@ def measurement(index: int, cpm: int) -> CzechRadMeasurement:
         cpm=cpm,
         interval_counts=2,
         total_counts=index,
+        radiation_status="A",
         gps_status="A",
         latitude=50.0,
         longitude=14.0,
         altitude_m=200.0,
-        altitude_status="A",
         satellites=8,
         hdop_raw=100,
         expected_checksum=1,
@@ -112,4 +112,3 @@ class RadiationTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

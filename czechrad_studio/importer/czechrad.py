@@ -75,42 +75,27 @@ def _parse_coordinate(value: str, hemisphere: str, *, latitude: bool) -> float:
     return decimal
 
 
-def parse_measurement_line(
-    line: str, *, line_number: int | None = None
-) -> CzechRadMeasurement:
-    """Parse one CzechRad measurement while preserving untrusted GPS facts."""
+def _parse_coordinates(fields: list[str]) -> tuple[float | None, float | None, str | None]:
+    """Parse position independently so valid radiation is never discarded.
 
-    raw_line = line.strip()
-    if not raw_line.startswith("$CZRA1,"):
-        raise CzechRadParseError("not a $CZRA1 measurement")
-    if "*" not in raw_line:
-        raise CzechRadParseError("missing checksum separator")
-
-    sentence, checksum_text = raw_line.rsplit("*", 1)
-    # CzechRad firmware writes both zero-padded (``*0C``) and compact
-    # (``*C``) hexadecimal checksums, so both representations are valid.
-    if len(checksum_text) not in {1, 2}:
-        raise CzechRadParseError("checksum must contain one or two hexadecimal digits")
-    try:
-        expected_checksum = int(checksum_text, 16)
-    except ValueError as exc:
-        raise CzechRadParseError("checksum is not hexadecimal") from exc
-
-    fields = sentence[1:].split(",")
-    if len(fields) != 15:
-        raise CzechRadParseError(
-            f"expected 15 fields, received {len(fields)}"
-        )
+    CzechRad can write stale or nonsensical coordinate text while a GPS fix is
+    unavailable. The source text and a short audit reason are retained, but no
+    geometry is created from either coordinate when one of them is malformed.
+    """
 
     try:
-        cpm = int(fields[3])
-        interval_counts = int(fields[4])
-        total_counts = int(fields[5])
+        latitude = _parse_coordinate(fields[7], fields[8], latitude=True)
+        longitude = _parse_coordinate(fields[9], fields[10], latitude=False)
+    except CzechRadParseError as exc:
+        return None, None, str(exc)
+    return latitude, longitug=¶‰žËkºwµç_counts = int(fields[5])
         altitude_m = float(fields[11])
         satellites = int(fields[13])
         hdop_raw = int(fields[14])
     except ValueError as exc:
         raise CzechRadParseError("invalid numeric measurement field") from exc
+
+    latitude, longitude, coordinate_issue = _parse_coordinates(fields)
 
     return CzechRadMeasurement(
         device_id=fields[1],
@@ -118,17 +103,18 @@ def parse_measurement_line(
         cpm=cpm,
         interval_counts=interval_counts,
         total_counts=total_counts,
-        gps_status=fields[6],
-        latitude=_parse_coordinate(fields[7], fields[8], latitude=True),
-        longitude=_parse_coordinate(fields[9], fields[10], latitude=False),
+        radiation_status=fields[6],
+        gps_status=fields[12],
+        latitude=latitude,
+        longitude=longitude,
         altitude_m=altitude_m,
-        altitude_status=fields[12],
         satellites=satellites,
         hdop_raw=hdop_raw,
         expected_checksum=expected_checksum,
         calculated_checksum=calculate_checksum(sentence[1:]),
         raw_line=raw_line,
         line_number=line_number,
+        coordinate_issue=coordinate_issue,
     )
 
 

@@ -47,7 +47,10 @@ def validate_measurement(
         and not (latitude == 0.0 and longitude == 0.0)
     )
 
-    if not has_nonzero_coordinates:
+    if measurement.coordinate_issue is not None:
+        location_quality = LocationQuality.INVALID
+        issues.append("invalid_coordinate_encoding")
+    elif not has_nonzero_coordinates:
         location_quality = LocationQuality.NONE
         issues.append("missing_coordinates")
     elif (

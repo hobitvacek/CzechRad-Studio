@@ -32,17 +32,18 @@ class CzechRadMeasurement:
     cpm: int
     interval_counts: int
     total_counts: int
+    radiation_status: str
     gps_status: str
     latitude: float | None
     longitude: float | None
     altitude_m: float | None
-    altitude_status: str
     satellites: int
     hdop_raw: int
     expected_checksum: int
     calculated_checksum: int
     raw_line: str
     line_number: int | None = None
+    coordinate_issue: str | None = None
 
     @property
     def checksum_valid(self) -> bool:
@@ -94,4 +95,3 @@ class MeasurementValidation:
         """Whether the original coordinates may create map geometry."""
 
         return self.location_quality is LocationQuality.VALID
-

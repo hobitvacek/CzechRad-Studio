@@ -32,6 +32,14 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Memory layers for mapped measurements and stop/GPS-loss candidates.
 - CRS-aware zoom to imported WGS 84 tracks in OpenStreetMap projects.
 
+### Fixed
+
+- Preserve checksum-valid radiation measurements when CzechRad writes malformed
+  coordinates during a GPS outage; the records remain auditable without map
+  geometry instead of becoming parser failures.
+- Interpret field 6 as radiation-count validity and field 12 as GPS validity,
+  matching the published CzechRad LOG specification.
+
 ### Planned
 
 - Podpora `NOGPS*.LOG` jako měření bez polohy, včetně vnitřních úseků a ručního přiřazení místa.
@@ -48,4 +56,3 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 - Dokumenty VISION, ARCHITECTURE, ROADMAP a SURO_EXPORT.
 - Základní testy kontraktu pluginu.
 - Kontrola a sjednocení licenčních informací.
-
