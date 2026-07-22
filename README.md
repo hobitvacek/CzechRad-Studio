@@ -10,7 +10,9 @@ Aktuální experimentální verze `0.4.0` obsahuje použitelný import, monitori
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
-- zobrazení CPM i dopočteného µSv/h s barevnou legendou;
+- rozpoznání CzechRad `CZRA1`, staršího `CZRDD` a Safecast `BNRDD`;
+- zobrazení pětisekundové hodnoty µSv/h jako na displeji přístroje,
+  vyhlazeného minutového µSv/h nebo původního CPM s barevnou legendou;
 - volitelné sloučení stabilních dlouhých zastavení pouze pro zobrazení;
 - označení zastavení se zvýšenou radiací jako možného stacionárního měření;
 - bezpečné sledování karty nebo složky, archivaci a automatickou obnovu vrstev;

@@ -122,7 +122,7 @@ class CzechRadStudioPlugin:
             analysis,
             str(track_path),
             collapse_stops=True,
-            display_unit="usvh",
+            display_unit="device_usvh",
         )
         previous = self._monitored_layers.get(source_key)
         self._monitored_layers[source_key] = new_layers

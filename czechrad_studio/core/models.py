@@ -6,7 +6,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from .radiation import cpm_to_usvh, interval_counts_to_usvh
+from .radiation import (
+    calibration_for_device_type,
+    cpm_to_usvh,
+    device_family,
+    interval_counts_to_usvh,
+)
 
 
 class TimeQuality(str, Enum):
@@ -27,7 +32,7 @@ class LocationQuality(str, Enum):
 
 @dataclass(frozen=True)
 class CzechRadMeasurement:
-    """One parsed ``$CZRA1`` record without QGIS-specific objects."""
+    """One supported CzechRad/Safecast record without QGIS objects."""
 
     device_id: str
     timestamp: datetime
@@ -46,6 +51,7 @@ class CzechRadMeasurement:
     raw_line: str
     line_number: int | None = None
     coordinate_issue: str | None = None
+    device_type: str = "CZRA1"
 
     @property
     def checksum_valid(self) -> bool:
@@ -61,15 +67,25 @@ class CzechRadMeasurement:
 
     @property
     def dose_rate_usvh(self) -> float:
-        """Stable one-minute dose-rate estimate shown by CzechRad."""
+        """Stable dose estimate calculated from the one-minute CPM field."""
 
-        return cpm_to_usvh(self.cpm)
+        return cpm_to_usvh(self.cpm, cpm_per_usvh=self.cpm_per_usvh)
 
     @property
     def interval_dose_rate_usvh(self) -> float:
         """Faster, noisier estimate from the latest five-second interval."""
 
-        return interval_counts_to_usvh(self.interval_counts)
+        return interval_counts_to_usvh(
+            self.interval_counts, cpm_per_usvh=self.cpm_per_usvh
+        )
+
+    @property
+    def device_family(self) -> str:
+        return device_family(self.device_type)
+
+    @property
+    def cpm_per_usvh(self) -> float:
+        return calibration_for_device_type(self.device_type)
 
 
 @dataclass(frozen=True)

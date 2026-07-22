@@ -41,12 +41,34 @@ class GeoPackageRepositoryTest(unittest.TestCase):
                 row[0]
                 for row in connection.execute("SELECT table_name FROM gpkg_contents")
             }
+            device_columns = {
+                row[1] for row in connection.execute("PRAGMA table_info(devices)")
+            }
         finally:
             connection.close()
 
         self.assertEqual(GPKG_APPLICATION_ID, application_id)
         self.assertIn("measurements", contents)
         self.assertIn("missions", contents)
+        self.assertIn("device_type", device_columns)
+        self.assertIn("device_family", device_columns)
+        self.assertIn("calibration_cpm_per_usvh", device_columns)
+
+    def test_import_stores_detected_device_metadata(self):
+        analysis = analyze_log_files(self.track)
+        self.repository.store_import(analysis, self.track)
+
+        connection = sqlite3.connect(str(self.database))
+        try:
+            row = connection.execute(
+                "SELECT device_type, device_family, calibration_cpm_per_usvh FROM devices"
+            ).fetchone()
+        finally:
+            connection.close()
+
+        self.assertEqual("CZRA1", row[0])
+        self.assertEqual("CzechRad", row[1])
+        self.assertAlmostEqual(328.5, row[2])
 
     def test_creates_and_lists_missions(self):
         mission = self.repository.create_mission(

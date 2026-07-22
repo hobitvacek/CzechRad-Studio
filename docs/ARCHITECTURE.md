@@ -34,6 +34,15 @@ Kontrolovaný export pro SÚRO
 
 Závislosti směřují od UI a infrastruktury k doménovému modelu. Doménové moduly nesmí importovat `qgis` ani `qgis.PyQt`.
 
+## Přístroje a radiační hodnoty
+
+Parser rozlišuje typ věty přímo z prvního pole záznamu. Aktuálně podporuje
+`CZRA1`, starší CzechRad `CZRDD` a Safecast `BNRDD`. Doménový model uchovává
+typ i rodinu přístroje a volí kalibraci 328,5 CPM/µSv/h pro CzechRad nebo
+334 CPM/µSv/h pro Safecast. Rychlá hodnota odpovídající displeji se počítá
+z počtu impulzů za posledních pět sekund; minutové CPM zůstává samostatnou,
+vyhlazenou hodnotou.
+
 ## Navržený datový model
 
 ### SourceLog

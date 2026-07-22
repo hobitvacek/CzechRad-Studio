@@ -4,6 +4,13 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Corrected the default µSv/h map mode to use the device's latest five-second
+  count, while retaining a separate smoothed one-minute CPM mode.
+- Added explicit device detection for CzechRad `CZRA1`, legacy CzechRad
+  `CZRDD`, and Safecast bGeigie Nano `BNRDD` records.
+- Added CzechRad (328.5 CPM/µSv/h) and Safecast (334 CPM/µSv/h) calibration
+  profiles to map layers, stop summaries, and GeoPackage device metadata.
+
 ### Added
 
 - Versioned GeoPackage schema for devices, missions, daily source logs,

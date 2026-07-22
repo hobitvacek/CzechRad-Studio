@@ -76,6 +76,32 @@ class CzechRadParserTest(unittest.TestCase):
         self.assertEqual("A", measurement.gps_status)
         self.assertTrue(validation.has_geometry)
 
+    def test_distinguishes_supported_device_sentence_types(self):
+        for device_type, family in (
+            ("CZRA1", "CzechRad"),
+            ("CZRDD", "CzechRad (starší formát)"),
+            ("BNRDD", "Safecast bGeigie Nano"),
+        ):
+            payload = (
+                f"{device_type},TEST,2026-07-17T15:08:42Z,40,4,100,A,"
+                "5000.0000,N,01400.0000,E,250.00,A,8,100"
+            )
+            measurement = parse_measurement_line(
+                f"${payload}*{calculate_checksum(payload):X}"
+            )
+            self.assertEqual(device_type, measurement.device_type)
+            self.assertEqual(family, measurement.device_family)
+
+    def test_rejects_unknown_future_device_type_explicitly(self):
+        payload = (
+            "CZRA2,TEST,2026-07-17T15:08:42Z,40,4,100,A,"
+            "5000.0000,N,01400.0000,E,250.00,A,8,100"
+        )
+        with self.assertRaisesRegex(CzechRadParseError, "unsupported"):
+            parse_measurement_line(
+                f"${payload}*{calculate_checksum(payload):X}"
+            )
+
     def test_invalid_coordinate_text_keeps_radiation_without_geometry(self):
         line = (
             "$CZRA1,0796,2026-07-21T03:03:34Z,27,5,23,V,"

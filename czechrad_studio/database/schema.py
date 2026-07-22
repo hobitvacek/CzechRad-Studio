@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime, timezone
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 GPKG_APPLICATION_ID = 0x47504B47
 GPKG_USER_VERSION = 10300
 
@@ -181,6 +181,28 @@ def _migration_1(connection: sqlite3.Connection) -> None:
         )
 
 
+def _migration_2(connection: sqlite3.Connection) -> None:
+    """Record the exact LOG sentence family and its calibration."""
+
+    columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(devices)")
+    }
+    additions = (
+        ("device_type", "TEXT NOT NULL DEFAULT 'CZRA1'"),
+        ("device_family", "TEXT NOT NULL DEFAULT 'CzechRad'"),
+        ("calibration_cpm_per_usvh", "REAL NOT NULL DEFAULT 328.5"),
+    )
+    for name, declaration in additions:
+        if name not in columns:
+            connection.execute(
+                f"ALTER TABLE devices ADD COLUMN {name} {declaration}"
+            )
+    connection.execute(
+        "INSERT INTO crs_schema_migrations(version, applied_at_utc) VALUES (?, ?)",
+        (2, utc_now_text()),
+    )
+
+
 def migrate(connection: sqlite3.Connection) -> int:
     """Initialize or upgrade a CzechRad Studio GeoPackage transactionally."""
 
@@ -200,10 +222,12 @@ def migrate(connection: sqlite3.Connection) -> int:
         if current < 1:
             _migration_1(connection)
             current = 1
+        if current < 2:
+            _migration_2(connection)
+            current = 2
         if current > SCHEMA_VERSION:
             raise RuntimeError(
                 "Databáze byla vytvořena novější verzí CzechRad Studia "
                 f"(schéma {current}, podporováno {SCHEMA_VERSION})."
             )
     return current
-

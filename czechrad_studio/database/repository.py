@@ -169,10 +169,13 @@ class GeoPackageRepository:
         if nogps_file is not None and not nogps_file.is_file():
             raise FileNotFoundError(nogps_file)
 
-        device_ids = {item.device_id for item in analysis.track.measurements}
-        if len(device_ids) != 1:
+        devices = {
+            (item.device_id, item.device_type) for item in analysis.track.measurements
+        }
+        if len(devices) != 1:
             raise ValueError("Denní LOG musí obsahovat právě jedno zařízení.")
-        device_serial = next(iter(device_ids))
+        device_serial, device_type = next(iter(devices))
+        first_measurement = analysis.track.measurements[0]
         matched_nogps = (
             analysis.nogps_correlation.matched
             if analysis.nogps_correlation is not None
@@ -207,8 +210,28 @@ class GeoPackageRepository:
                     raise KeyError(f"Mise {mission_id} nebyla nalezena.")
 
                 connection.execute(
-                    "INSERT OR IGNORE INTO devices(serial, model, created_at_utc) VALUES (?, 'CzechRad', ?)",
-                    (device_serial, imported_at),
+                    """
+                    INSERT OR IGNORE INTO devices
+                    (serial, model, created_at_utc, device_type, device_family,
+                     calibration_cpm_per_usvh)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        device_serial, first_measurement.device_family, imported_at,
+                        device_type, first_measurement.device_family,
+                        first_measurement.cpm_per_usvh,
+                    ),
+                )
+                connection.execute(
+                    """
+                    UPDATE devices SET model = ?, device_type = ?, device_family = ?,
+                        calibration_cpm_per_usvh = ? WHERE serial = ?
+                    """,
+                    (
+                        first_measurement.device_family, device_type,
+                        first_measurement.device_family,
+                        first_measurement.cpm_per_usvh, device_serial,
+                    ),
                 )
                 device_id = connection.execute(
                     "SELECT id FROM devices WHERE serial = ?", (device_serial,)
