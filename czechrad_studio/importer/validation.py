@@ -1,5 +1,7 @@
 """Validation rules for parsed CzechRad measurements."""
 
+from __future__ import annotations
+
 from datetime import date
 
 from ..core.models import (

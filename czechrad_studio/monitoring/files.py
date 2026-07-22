@@ -1,5 +1,7 @@
 """QGIS-independent discovery, stability tracking and safe LOG archiving."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
@@ -8,14 +10,14 @@ import shutil
 from uuid import uuid4
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class FileSnapshot:
     path: Path
     size: int
     modified_ns: int
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ArchiveResult:
     source: Path
     destination: Path
@@ -128,4 +130,3 @@ def archive_ready_logs(
         archive_log(path, archive_folder)
         for path in tracker.observe(source_folder)
     )
-

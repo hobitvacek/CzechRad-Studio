@@ -7,7 +7,7 @@ from ..core.models import CzechRadMeasurement
 from .validation import validate_measurement
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class NogpsCorrelation:
     """Auditable selection of NOGPS records for one daily track."""
 
@@ -79,4 +79,3 @@ def correlate_nogps(
         different_device=tuple(different_device),
         outside_window=tuple(outside_window),
     )
-

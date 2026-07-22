@@ -1,5 +1,7 @@
 """Optional map-only aggregation of stable prolonged stops."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from statistics import mean, median
@@ -7,7 +9,7 @@ from statistics import mean, median
 from .stops import StopCandidate
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class StopSummary:
     """One average display point representing a stable stop."""
 
@@ -27,7 +29,7 @@ class StopSummary:
         return cpm_to_usvh(self.average_cpm)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class StopRadiationAssessment:
     """Comparison of one stop with the nearby moving-track background."""
 
@@ -177,4 +179,3 @@ def summarize_stable_stop(
         maximum_cpm=max(values),
         sample_count=len(values),
     )
-

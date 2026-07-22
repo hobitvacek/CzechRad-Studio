@@ -1,5 +1,7 @@
 """QGIS-independent orchestration of one daily CzechRad import."""
 
+from __future__ import annotations
+
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date
@@ -14,7 +16,7 @@ from .nogps import NogpsCorrelation, correlate_nogps
 from .validation import HDOP_NO_FIX, validate_measurement
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ImportAnalysis:
     """Complete analysis prepared for presentation by QGIS or another client."""
 
@@ -131,4 +133,3 @@ def analyze_log_files(
             nogps_lines = tuple(handle)
 
     return analyze_log_lines(track_lines, nogps_lines)
-

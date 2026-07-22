@@ -1,12 +1,12 @@
 # CzechRad Studio
 
-CzechRad Studio je připravovaný open-source plugin pro QGIS 4, který má zjednodušit import, správu, kontrolu a export radiačních měření z detektorů CzechRad.
+CzechRad Studio je připravovaný open-source plugin pro QGIS 3.22+ a QGIS 4, který má zjednodušit import, správu, kontrolu a export radiačních měření z detektorů CzechRad.
 
 Projekt navazuje na [Radiation ToolBox Plugin](https://gitlab.com/opengeolabs/radiation-toolbox/qgis-radiation-toolbox-plugin), který vytvořila společnost OpenGeoLabs s.r.o. pro SÚRO. CzechRad Studio je samostatný odvozený projekt; není oficiálním produktem ani službou SÚRO, OpenGeoLabs nebo výrobce CzechRad.
 
 ## Stav projektu
 
-Aktuální experimentální verze `0.3.0` obsahuje první použitelný import a monitoring:
+Aktuální experimentální verze `0.3.1` obsahuje první použitelný import, monitoring a společnou podporu Qt5/Qt6:
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
@@ -14,16 +14,17 @@ Aktuální experimentální verze `0.3.0` obsahuje první použitelný import a 
 - volitelné sloučení stabilních dlouhých zastavení pouze pro zobrazení;
 - označení zastavení se zvýšenou radiací jako možného stacionárního měření;
 - bezpečné sledování karty nebo složky, archivaci a automatickou obnovu vrstev;
+- jeden společný instalační balíček pro QGIS 3.22–3.44 a QGIS 4.x;
 - modulární adresáře pro import, monitoring, databázi, mise, úseky a export SÚRO;
 - počáteční architektura, vize a roadmapa;
 - základní testy kontraktu pluginu bez závislosti na QGIS.
 
-Monitoring složky, databáze a export pro SÚRO zatím nejsou implementovány.
+Databáze, správa misí a export pro SÚRO zatím nejsou implementovány.
 
 ## Instalace vývojové verze
 
 1. Stáhněte nebo naklonujte repozitář.
-2. Zkopírujte adresář `czechrad_studio` do adresáře Python pluginů profilu QGIS 4.
+2. Zkopírujte adresář `czechrad_studio` do adresáře Python pluginů profilu QGIS 3 nebo QGIS 4.
 3. V QGIS otevřete správce zásuvných modulů a zapněte **CzechRad Studio**.
 
 Plugin je v této fázi označen jako experimentální a je určen pouze pro vývojové testování.
@@ -42,4 +43,3 @@ Projekt je šířen pod licencí `GPL-3.0-or-later`. Podrobnosti o původním pr
 ## Hlášení chyb
 
 Chyby a návrhy evidujte v [GitHub Issues](https://github.com/hobitvacek/CzechRad-Studio/issues). K hlášení nepřikládejte neveřejné polohové údaje bez kontroly a anonymizace.
-

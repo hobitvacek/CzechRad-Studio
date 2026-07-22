@@ -1,5 +1,7 @@
 """Parser for CzechRad ``$CZRA1`` LOG records."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Iterable
@@ -11,7 +13,7 @@ class CzechRadParseError(ValueError):
     """Raised when a CzechRad measurement line is structurally invalid."""
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ParseFailure:
     """Audit information for a line that could not be parsed."""
 
@@ -20,7 +22,7 @@ class ParseFailure:
     reason: str
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ParsedLog:
     """Parsed measurements and non-fatal line failures from one source."""
 
@@ -88,7 +90,40 @@ def _parse_coordinates(fields: list[str]) -> tuple[float | None, float | None, s
         longitude = _parse_coordinate(fields[9], fields[10], latitude=False)
     except CzechRadParseError as exc:
         return None, None, str(exc)
-    return latitude, longitug=¶‰žËkºwµç_counts = int(fields[5])
+    return latitude, longitude, None
+
+
+def parse_measurement_line(
+    line: str, *, line_number: int | None = None
+) -> CzechRadMeasurement:
+    """Parse one CzechRad measurement while preserving untrusted GPS facts."""
+
+    raw_line = line.strip()
+    if not raw_line.startswith("$CZRA1,"):
+        raise CzechRadParseError("not a $CZRA1 measurement")
+    if "*" not in raw_line:
+        raise CzechRadParseError("missing checksum separator")
+
+    sentence, checksum_text = raw_line.rsplit("*", 1)
+    # CzechRad firmware writes both zero-padded (``*0C``) and compact
+    # (``*C``) hexadecimal checksums, so both representations are valid.
+    if len(checksum_text) not in {1, 2}:
+        raise CzechRadParseError("checksum must contain one or two hexadecimal digits")
+    try:
+        expected_checksum = int(checksum_text, 16)
+    except ValueError as exc:
+        raise CzechRadParseError("checksum is not hexadecimal") from exc
+
+    fields = sentence[1:].split(",")
+    if len(fields) != 15:
+        raise CzechRadParseError(
+            f"expected 15 fields, received {len(fields)}"
+        )
+
+    try:
+        cpm = int(fields[3])
+        interval_counts = int(fields[4])
+        total_counts = int(fields[5])
         altitude_m = float(fields[11])
         satellites = int(fields[13])
         hdop_raw = int(fields[14])

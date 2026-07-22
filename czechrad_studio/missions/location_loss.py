@@ -8,7 +8,7 @@ from ..core.models import CzechRadMeasurement
 from ..importer.validation import validate_measurement
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class LocationLossEpisode:
     """A continuous candidate period without a trusted GPS position.
 
@@ -107,4 +107,3 @@ def detect_location_loss_episodes(
         )
 
     return tuple(episodes)
-

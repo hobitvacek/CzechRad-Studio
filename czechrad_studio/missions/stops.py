@@ -9,7 +9,7 @@ from ..core.models import CzechRadMeasurement
 from ..importer.validation import validate_measurement
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class StopCandidate:
     """A prolonged spatial cluster that may represent a real stop.
 
@@ -166,4 +166,3 @@ def detect_stop_candidates(
             merged.append(candidate)
 
     return tuple(merged)
-
