@@ -48,8 +48,13 @@ class ImportDialog(QDialog):
             "všechny body zobrazené."
         )
         self.display_unit_combo = QComboBox(self)
-        self.display_unit_combo.addItem("µSv/h – stejně jako displej přístroje", "usvh")
-        self.display_unit_combo.addItem("CPM – původní hodnota z LOGu", "cpm")
+        self.display_unit_combo.addItem(
+            "µSv/h – hodnota displeje (posledních 5 s)", "device_usvh"
+        )
+        self.display_unit_combo.addItem(
+            "µSv/h – vyhlazená hodnota (minutové CPM)", "minute_usvh"
+        )
+        self.display_unit_combo.addItem("CPM – původní minutová hodnota", "cpm")
 
         track_button = QPushButton("Vybrat…", self)
         track_button.clicked.connect(self._choose_track)

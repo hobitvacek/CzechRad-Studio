@@ -18,15 +18,27 @@ class StopSummary:
     latitude: float
     longitude: float
     average_cpm: float
+    average_interval_counts: float
     minimum_cpm: int
     maximum_cpm: int
     sample_count: int
+    cpm_per_usvh: float
 
     @property
     def dose_rate_usvh(self) -> float:
         from ..core.radiation import cpm_to_usvh
 
-        return cpm_to_usvh(self.average_cpm)
+        return cpm_to_usvh(
+            self.average_cpm, cpm_per_usvh=self.cpm_per_usvh
+        )
+
+    @property
+    def interval_dose_rate_usvh(self) -> float:
+        from ..core.radiation import interval_counts_to_usvh
+
+        return interval_counts_to_usvh(
+            self.average_interval_counts, cpm_per_usvh=self.cpm_per_usvh
+        )
 
 
 @dataclass(frozen=True)
@@ -41,12 +53,15 @@ class StopRadiationAssessment:
     increase_ratio: float
     context_samples: int
     elevated: bool
+    cpm_per_usvh: float
 
     @property
     def comparison_usvh(self) -> float:
         from ..core.radiation import cpm_to_usvh
 
-        return cpm_to_usvh(self.comparison_cpm)
+        return cpm_to_usvh(
+            self.comparison_cpm, cpm_per_usvh=self.cpm_per_usvh
+        )
 
 
 def _maximum_window_average(values: list[int], window_size: int) -> float:
@@ -76,8 +91,6 @@ def assess_stop_radiation(
     window exceeds both the relative and absolute thresholds. Isolated noisy
     points therefore do not create a candidate.
     """
-
-    from ..core.radiation import CZECHRAD_CPM_PER_USVH
 
     if context_duration <= timedelta(0):
         raise ValueError("context_duration must be positive")
@@ -114,7 +127,8 @@ def assess_stop_radiation(
         if baseline_cpm > 0
         else (float("inf") if increase_cpm > 0 else 0.0)
     )
-    minimum_increase_cpm = absolute_threshold_usvh * CZECHRAD_CPM_PER_USVH
+    cpm_per_usvh = candidate.measurements[0].cpm_per_usvh
+    minimum_increase_cpm = absolute_threshold_usvh * cpm_per_usvh
     elevated = (
         increase_cpm >= minimum_increase_cpm
         and increase_ratio >= relative_threshold
@@ -128,6 +142,7 @@ def assess_stop_radiation(
         increase_ratio=increase_ratio,
         context_samples=len(context),
         elevated=elevated,
+        cpm_per_usvh=cpm_per_usvh,
     )
 
 
@@ -169,13 +184,16 @@ def summarize_stable_stop(
         # yet provide the surrounding track.
         return None
     values = [item.cpm for item in candidate.measurements]
+    interval_values = [item.interval_counts for item in candidate.measurements]
     return StopSummary(
         start=candidate.start,
         end=candidate.end,
         latitude=candidate.center_latitude,
         longitude=candidate.center_longitude,
         average_cpm=mean(values),
+        average_interval_counts=mean(interval_values),
         minimum_cpm=min(values),
         maximum_cpm=max(values),
         sample_count=len(values),
+        cpm_per_usvh=candidate.measurements[0].cpm_per_usvh,
     )

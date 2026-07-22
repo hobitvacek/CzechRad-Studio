@@ -11,11 +11,12 @@ from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import QgsProject
 
 from .core.constants import PLUGIN_NAME
+from .database import GeoPackageRepository, ImportDisposition
 from .importer import analyze_log_files
 from .missions import assess_stop_radiation
 from .monitoring import StableFileTracker, archive_ready_logs
 from .qt_compat import QAction, DIALOG_ACCEPTED, exec_dialog
-from .ui import ImportDialog, MonitorDialog, add_analysis_layers
+from .ui import ImportDialog, MonitorDialog, ProjectDialog, add_analysis_layers
 
 
 class CzechRadStudioPlugin:
@@ -24,6 +25,7 @@ class CzechRadStudioPlugin:
     def __init__(self, iface):
         self.iface = iface
         self.action = None
+        self.project_action = None
         self.monitor_action = None
         self.monitor_timer = QTimer(self.iface.mainWindow())
         self.monitor_timer.setInterval(5000)
@@ -42,6 +44,12 @@ class CzechRadStudioPlugin:
         self.iface.addPluginToMenu(f"&{PLUGIN_NAME}", self.action)
         self.iface.addToolBarIcon(self.action)
 
+        self.project_action = QAction(
+            "Projekt a aktivní mise…", self.iface.mainWindow()
+        )
+        self.project_action.triggered.connect(self.configure_project)
+        self.iface.addPluginToMenu(f"&{PLUGIN_NAME}", self.project_action)
+
         self.monitor_action = QAction(
             "Nastavit automatický import…", self.iface.mainWindow()
         )
@@ -54,6 +62,10 @@ class CzechRadStudioPlugin:
             return
 
         self.monitor_timer.stop()
+        if self.project_action is not None:
+            self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.project_action)
+            self.project_action.deleteLater()
+            self.project_action = None
         if self.monitor_action is not None:
             self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.monitor_action)
             self.monitor_action.deleteLater()
@@ -70,6 +82,28 @@ class CzechRadStudioPlugin:
             self.monitor_tracker = StableFileTracker()
             self._apply_monitor_settings()
 
+    def configure_project(self):
+        dialog = ProjectDialog(self.iface.mainWindow())
+        if exec_dialog(dialog) == DIALOG_ACCEPTED:
+            repository = GeoPackageRepository(dialog.database_path)
+            mission = repository.get_mission(dialog.mission_id)
+            self.iface.messageBar().pushSuccess(
+                PLUGIN_NAME, f"Aktivní mise: {mission.name}"
+            )
+
+    @staticmethod
+    def _store_analysis(analysis, track_path, nogps_path=None):
+        database_path, mission_id = ProjectDialog.active_configuration()
+        if not database_path or not mission_id:
+            return None
+        repository = GeoPackageRepository(database_path)
+        return repository.store_import(
+            analysis,
+            track_path,
+            nogps_path=nogps_path,
+            mission_id=mission_id,
+        )
+
     def _apply_monitor_settings(self):
         enabled = QSettings().value(MonitorDialog.ENABLED_KEY, False, type=bool)
         if enabled:
@@ -83,11 +117,12 @@ class CzechRadStudioPlugin:
 
     def _replace_monitored_layer(self, source_key: str, track_path: Path):
         analysis = analyze_log_files(track_path, self._latest_nogps)
+        self._store_analysis(analysis, track_path, self._latest_nogps)
         new_layers = add_analysis_layers(
             analysis,
             str(track_path),
             collapse_stops=True,
-            display_unit="usvh",
+            display_unit="device_usvh",
         )
         previous = self._monitored_layers.get(source_key)
         self._monitored_layers[source_key] = new_layers
@@ -146,6 +181,9 @@ class CzechRadStudioPlugin:
 
         try:
             analysis = analyze_log_files(dialog.track_path, dialog.nogps_path)
+            stored = self._store_analysis(
+                analysis, dialog.track_path, dialog.nogps_path
+            )
             layers = add_analysis_layers(
                 analysis,
                 dialog.track_path,
@@ -173,10 +211,24 @@ class CzechRadStudioPlugin:
                 for candidate in analysis.stop_candidates
             )
         )
+        database_message = ""
+        if stored is not None:
+            disposition_labels = {
+                ImportDisposition.CREATED: "nový denní LOG uložen",
+                ImportDisposition.REVISED: "uložena nová revize denního LOGu",
+                ImportDisposition.UNCHANGED: "databáze beze změny",
+            }
+            database_message = (
+                f"\nDatabáze: {disposition_labels[stored.disposition]} "
+                f"({stored.measurement_count} měření)"
+            )
         QMessageBox.information(
             self.iface.mainWindow(),
             PLUGIN_NAME,
             "Měření bylo načteno.\n\n"
+            f"Přístroj: {analysis.track.measurements[0].device_family} "
+            f"({analysis.track.measurements[0].device_type}, "
+            f"č. {analysis.track.measurements[0].device_id})\n"
             f"Datum (UTC): {analysis.expected_date.isoformat()}\n"
             f"Záznamů v denním LOGu: {len(analysis.track.measurements)}\n"
             f"Bodů v mapě: {len(analysis.geometry_measurements)}\n"
@@ -184,5 +236,6 @@ class CzechRadStudioPlugin:
             f"Kandidátů zastavení: {len(analysis.stop_candidates)}\n"
             f"Možných stacionárních měření: {elevated_stops}\n"
             f"Kandidátů ztráty GPS: {len(analysis.location_losses)}\n"
-            f"Nezpracovaných řádků: {analysis.failure_count}",
+            f"Nezpracovaných řádků: {analysis.failure_count}"
+            f"{database_message}",
         )

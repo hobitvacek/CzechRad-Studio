@@ -4,7 +4,28 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Fixed QGIS 3.34 / Qt 5 field creation on Linux by selecting QVariant field
+  types from the actual Qt major version instead of the presence of a scoped
+  QMetaType enum.
+- Corrected the default µSv/h map mode to use the device's latest five-second
+  count, while retaining a separate smoothed one-minute CPM mode.
+- Added explicit device detection for CzechRad `CZRA1`, legacy CzechRad
+  `CZRDD`, and Safecast bGeigie Nano `BNRDD` records.
+- Added CzechRad (328.5 CPM/µSv/h) and Safecast (334 CPM/µSv/h) calibration
+  profiles to map layers, stop summaries, and GeoPackage device metadata.
+
 ### Added
+
+- Versioned GeoPackage schema for devices, missions, daily source logs,
+  immutable revisions and validated measurements.
+- Transactional import with SHA-256 deduplication and preservation of the
+  previous valid revision when a daily LOG changes.
+- Mission creation and assignment of multiple daily logs through a new QGIS
+  project dialog.
+- Persistence of manual imports and monitored card imports into the active
+  mission, including radiation records without usable GPS geometry.
+- NOGPS revision identity based only on records matched to the imported day,
+  preventing cumulative-file growth from revising unrelated older tracks.
 
 - One shared plugin package for QGIS 3.22+ / Qt 5 and QGIS 4.x / Qt 6.
 - A focused Qt compatibility layer for dialog enums, standard buttons,

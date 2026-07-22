@@ -5,7 +5,7 @@ the few API spelling differences which the QGIS shim cannot hide, so the rest
 of CzechRad Studio stays version-independent.
 """
 
-from qgis.PyQt.QtCore import QMetaType, QVariant
+from qgis.PyQt.QtCore import QT_VERSION_STR, QMetaType, QVariant
 from qgis.PyQt.QtWidgets import QDialog, QDialogButtonBox
 
 try:
@@ -25,8 +25,10 @@ def _enum_member(owner, scoped_name, member_name):
 def _field_type(qmeta_name, qvariant_name):
     """Return the field type expected by QgsField in the active QGIS major."""
 
-    scoped = getattr(QMetaType, "Type", None)
-    if scoped is not None and hasattr(scoped, qmeta_name):
+    # Qt 5.15 may expose QMetaType.Type too, but QGIS 3 QgsField still expects
+    # QVariant.Type. Detect the actual Qt major instead of probing the enum.
+    if int(QT_VERSION_STR.split(".", 1)[0]) >= 6:
+        scoped = getattr(QMetaType, "Type", QMetaType)
         return getattr(scoped, qmeta_name)
     return getattr(QVariant, qvariant_name)
 

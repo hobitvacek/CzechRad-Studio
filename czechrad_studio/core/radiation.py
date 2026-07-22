@@ -3,24 +3,59 @@
 from dataclasses import dataclass
 
 
-# CzechRad DATA documentation specifies 328.5 CPM per microSievert/hour.
+# Device documentation specifies different tube calibration factors.
 CZECHRAD_CPM_PER_USVH = 328.5
+SAFECAST_CPM_PER_USVH = 334.0
+
+DEVICE_CALIBRATIONS = {
+    "CZRA1": CZECHRAD_CPM_PER_USVH,
+    "CZRDD": CZECHRAD_CPM_PER_USVH,
+    "BNRDD": SAFECAST_CPM_PER_USVH,
+}
+
+DEVICE_FAMILIES = {
+    "CZRA1": "CzechRad",
+    "CZRDD": "CzechRad (starší formát)",
+    "BNRDD": "Safecast bGeigie Nano",
+}
 
 
-def cpm_to_usvh(cpm: float) -> float:
+def calibration_for_device_type(device_type: str) -> float:
+    """Return CPM per µSv/h for a supported LOG sentence type."""
+
+    try:
+        return DEVICE_CALIBRATIONS[device_type.upper()]
+    except KeyError as exc:
+        raise ValueError(f"unsupported device type: {device_type}") from exc
+
+
+def device_family(device_type: str) -> str:
+    """Return a human-readable family name for a LOG sentence type."""
+
+    try:
+        return DEVICE_FAMILIES[device_type.upper()]
+    except KeyError as exc:
+        raise ValueError(f"unsupported device type: {device_type}") from exc
+
+
+def cpm_to_usvh(
+    cpm: float, *, cpm_per_usvh: float = CZECHRAD_CPM_PER_USVH
+) -> float:
     """Convert a one-minute CzechRad count to a stable dose-rate estimate."""
 
-    if cpm < 0:
+    if cpm < 0 or cpm_per_usvh <= 0:
         raise ValueError("cpm must not be negative")
-    return cpm / CZECHRAD_CPM_PER_USVH
+    return cpm / cpm_per_usvh
 
 
-def interval_counts_to_usvh(interval_counts: float) -> float:
+def interval_counts_to_usvh(
+    interval_counts: float, *, cpm_per_usvh: float = CZECHRAD_CPM_PER_USVH
+) -> float:
     """Convert one five-second count to a faster, noisier dose-rate estimate."""
 
-    if interval_counts < 0:
+    if interval_counts < 0 or cpm_per_usvh <= 0:
         raise ValueError("interval_counts must not be negative")
-    return interval_counts * 12 / CZECHRAD_CPM_PER_USVH
+    return interval_counts * 12 / cpm_per_usvh
 
 
 @dataclass(frozen=True)

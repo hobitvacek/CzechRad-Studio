@@ -4,6 +4,7 @@ from .czechrad import (
     CzechRadParseError,
     ParseFailure,
     ParsedLog,
+    SUPPORTED_DEVICE_TYPES,
     calculate_checksum,
     parse_log,
     parse_measurement_line,
@@ -19,6 +20,7 @@ __all__ = [
     "NogpsCorrelation",
     "ParseFailure",
     "ParsedLog",
+    "SUPPORTED_DEVICE_TYPES",
     "calculate_checksum",
     "correlate_nogps",
     "analyze_log_files",
@@ -27,4 +29,3 @@ __all__ = [
     "parse_measurement_line",
     "validate_measurement",
 ]
-

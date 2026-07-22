@@ -8,6 +8,7 @@ from .aggregation import (
     summarize_stable_stop,
 )
 from .location_loss import LocationLossEpisode, detect_location_loss_episodes
+from .model import Mission
 from .stops import StopCandidate, detect_stop_candidates
 
 __all__ = [
@@ -17,8 +18,8 @@ __all__ = [
     "has_radiation_signal",
     "summarize_stable_stop",
     "LocationLossEpisode",
+    "Mission",
     "StopCandidate",
     "detect_location_loss_episodes",
     "detect_stop_candidates",
 ]
-

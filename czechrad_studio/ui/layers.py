@@ -38,10 +38,14 @@ def _set_marker(layer: QgsVectorLayer, color: str, size: str) -> None:
 
 
 def _set_radiation_renderer(layer: QgsVectorLayer, display_unit: str) -> None:
-    if display_unit not in {"usvh", "cpm"}:
+    if display_unit not in {"device_usvh", "minute_usvh", "cpm"}:
         raise ValueError(f"unsupported radiation display unit: {display_unit}")
-    field_name = "dose_usvh" if display_unit == "usvh" else "cpm"
-    bands = RADIATION_BANDS if display_unit == "usvh" else CPM_BANDS
+    field_name = {
+        "device_usvh": "fast_usvh",
+        "minute_usvh": "dose_usvh",
+        "cpm": "cpm",
+    }[display_unit]
+    bands = RADIATION_BANDS if display_unit != "cpm" else CPM_BANDS
     ranges = []
     for band in bands:
         symbol = QgsMarkerSymbol.createSimple(
@@ -73,6 +77,8 @@ def _track_layer(
         [
             QgsField("timestamp", FIELD_STRING),
             QgsField("device", FIELD_STRING),
+            QgsField("device_type", FIELD_STRING),
+            QgsField("device_family", FIELD_STRING),
             QgsField("cpm", FIELD_INT),
             QgsField("dose_usvh", FIELD_DOUBLE),
             QgsField("fast_usvh", FIELD_DOUBLE),
@@ -113,6 +119,8 @@ def _track_layer(
             [
                 measurement.timestamp.isoformat(),
                 measurement.device_id,
+                measurement.device_type,
+                measurement.device_family,
                 measurement.cpm,
                 measurement.dose_rate_usvh,
                 measurement.interval_dose_rate_usvh,
@@ -137,10 +145,12 @@ def _track_layer(
             [
                 summary.start.isoformat(),
                 analysis.track.measurements[0].device_id,
+                analysis.track.measurements[0].device_type,
+                analysis.track.measurements[0].device_family,
                 round(summary.average_cpm),
                 summary.dose_rate_usvh,
-                None,
-                None,
+                summary.interval_dose_rate_usvh,
+                round(summary.average_interval_counts),
                 None,
                 None,
                 None,
@@ -245,7 +255,7 @@ def add_analysis_layers(
     *,
     project: QgsProject | None = None,
     collapse_stops: bool = False,
-    display_unit: str = "usvh",
+    display_unit: str = "device_usvh",
 ) -> CreatedLayers:
     """Add a track and optional candidate layer to the current project."""
 
@@ -254,13 +264,14 @@ def add_analysis_layers(
 
     project = project or QgsProject.instance()
     stem = Path(track_path).stem
+    family = analysis.track.measurements[0].device_family
     track = _track_layer(
         analysis,
-        f"CzechRad {stem}",
+        f"{family} {stem}",
         collapse_stops=collapse_stops,
         display_unit=display_unit,
     )
-    candidates = _candidate_layer(analysis, f"CzechRad návrhy {stem}")
+    candidates = _candidate_layer(analysis, f"{family} návrhy {stem}")
     project.addMapLayer(track)
     if candidates is not None:
         project.addMapLayer(candidates)

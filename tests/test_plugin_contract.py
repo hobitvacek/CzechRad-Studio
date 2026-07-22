@@ -65,7 +65,10 @@ class PluginContractTest(unittest.TestCase):
             "ui/import_dialog.py",
             "ui/layers.py",
             "ui/monitor_dialog.py",
+            "ui/project_dialog.py",
             "monitoring/files.py",
+            "database/schema.py",
+            "database/repository.py",
             "qt_compat.py",
         ):
             self.assertTrue((PLUGIN / relative_path).is_file(), relative_path)
@@ -91,6 +94,13 @@ class PluginContractTest(unittest.TestCase):
 
         self.assertIn("QTimer", source)
         self.assertIn("archive_ready_logs", source)
+
+    def test_manual_and_monitored_imports_use_project_persistence(self):
+        source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
+
+        self.assertIn("ProjectDialog", source)
+        self.assertIn("GeoPackageRepository", source)
+        self.assertGreaterEqual(source.count("self._store_analysis("), 2)
 
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")

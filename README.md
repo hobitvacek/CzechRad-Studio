@@ -6,20 +6,26 @@ Projekt navazuje na [Radiation ToolBox Plugin](https://gitlab.com/opengeolabs/ra
 
 ## Stav projektu
 
-Aktuální experimentální verze `0.3.1` obsahuje první použitelný import, monitoring a společnou podporu Qt5/Qt6:
+Aktuální experimentální verze `0.4.0` obsahuje použitelný import, monitoring, projektovou databázi a společnou podporu Qt5/Qt6:
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
-- zobrazení CPM i dopočteného µSv/h s barevnou legendou;
+- rozpoznání CzechRad `CZRA1`, staršího `CZRDD` a Safecast `BNRDD`;
+- zobrazení pětisekundové hodnoty µSv/h jako na displeji přístroje,
+  vyhlazeného minutového µSv/h nebo původního CPM s barevnou legendou;
 - volitelné sloučení stabilních dlouhých zastavení pouze pro zobrazení;
 - označení zastavení se zvýšenou radiací jako možného stacionárního měření;
 - bezpečné sledování karty nebo složky, archivaci a automatickou obnovu vrstev;
 - jeden společný instalační balíček pro QGIS 3.22–3.44 a QGIS 4.x;
+- projektový GeoPackage s verzovaným schématem a atomickým importem;
+- trvalé uložení zařízení, denních LOGů, jejich revizí a měření bez nevratné úpravy zdroje;
+- mise složené z více denních LOGů a ochranu proti duplicitnímu importu;
+- nové revize změněného denního LOGu se zachováním předchozího stavu;
 - modulární adresáře pro import, monitoring, databázi, mise, úseky a export SÚRO;
 - počáteční architektura, vize a roadmapa;
 - základní testy kontraktu pluginu bez závislosti na QGIS.
 
-Databáze, správa misí a export pro SÚRO zatím nejsou implementovány.
+Rozdělování misí na měřicí úseky a export pro SÚRO zatím nejsou implementovány.
 
 ## Instalace vývojové verze
 
@@ -28,6 +34,10 @@ Databáze, správa misí a export pro SÚRO zatím nejsou implementovány.
 3. V QGIS otevřete správce zásuvných modulů a zapněte **CzechRad Studio**.
 
 Plugin je v této fázi označen jako experimentální a je určen pouze pro vývojové testování.
+
+Po instalaci otevřete **Zásuvné moduly → CzechRad Studio → Projekt a aktivní mise…**,
+vytvořte nebo otevřete soubor `.gpkg` a založte misi. Následující ruční i
+automatické importy se budou do aktivní mise ukládat bez duplicit.
 
 ## Dokumentace
 

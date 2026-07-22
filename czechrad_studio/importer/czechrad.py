@@ -1,4 +1,4 @@
-"""Parser for CzechRad ``$CZRA1`` LOG records."""
+"""Parser for supported CzechRad and Safecast LOG records."""
 
 from __future__ import annotations
 
@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 from typing import Iterable
 
 from ..core.models import CzechRadMeasurement
+
+
+SUPPORTED_DEVICE_TYPES = frozenset({"CZRA1", "CZRDD", "BNRDD"})
 
 
 class CzechRadParseError(ValueError):
@@ -96,11 +99,11 @@ def _parse_coordinates(fields: list[str]) -> tuple[float | None, float | None, s
 def parse_measurement_line(
     line: str, *, line_number: int | None = None
 ) -> CzechRadMeasurement:
-    """Parse one CzechRad measurement while preserving untrusted GPS facts."""
+    """Parse one supported measurement while preserving untrusted GPS facts."""
 
     raw_line = line.strip()
-    if not raw_line.startswith("$CZRA1,"):
-        raise CzechRadParseError("not a $CZRA1 measurement")
+    if not raw_line.startswith("$"):
+        raise CzechRadParseError("not a measurement sentence")
     if "*" not in raw_line:
         raise CzechRadParseError("missing checksum separator")
 
@@ -118,6 +121,11 @@ def parse_measurement_line(
     if len(fields) != 15:
         raise CzechRadParseError(
             f"expected 15 fields, received {len(fields)}"
+        )
+    device_type = fields[0].upper()
+    if device_type not in SUPPORTED_DEVICE_TYPES:
+        raise CzechRadParseError(
+            f"unsupported measurement type: {fields[0]!r}"
         )
 
     try:
@@ -150,6 +158,7 @@ def parse_measurement_line(
         raw_line=raw_line,
         line_number=line_number,
         coordinate_issue=coordinate_issue,
+        device_type=device_type,
     )
 
 

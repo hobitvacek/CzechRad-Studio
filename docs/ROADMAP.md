@@ -33,10 +33,10 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 
 ## 0.4.0 – GeoPackage a mise
 
-- [ ] Verzované databázové schéma a migrace.
-- [ ] Zdrojové LOGy, měření a zařízení.
-- [ ] Mise složené z více denních LOGů.
-- [ ] Stav importu, kontroly a archivace.
+- [x] Verzované databázové schéma a migrace.
+- [x] Zdrojové LOGy, měření a zařízení.
+- [x] Mise složené z více denních LOGů.
+- [x] Stav importu, aktuální revize a archivace předchozích revizí.
 
 ## 0.5.0 – Měřicí úseky
 

@@ -3,7 +3,12 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from czechrad_studio.core import CzechRadMeasurement, cpm_to_usvh
+from czechrad_studio.core import (
+    SAFECAST_CPM_PER_USVH,
+    CzechRadMeasurement,
+    cpm_to_usvh,
+    interval_counts_to_usvh,
+)
 from czechrad_studio.missions import (
     StopCandidate,
     assess_stop_radiation,
@@ -61,6 +66,18 @@ class RadiationTest(unittest.TestCase):
         self.assertAlmostEqual(1.0, cpm_to_usvh(328.5))
         self.assertAlmostEqual(0.18, cpm_to_usvh(59.13))
 
+    def test_safecast_calibration_matches_documented_factor(self):
+        self.assertAlmostEqual(
+            1.0,
+            cpm_to_usvh(334, cpm_per_usvh=SAFECAST_CPM_PER_USVH),
+        )
+
+    def test_five_second_value_matches_device_display_formula(self):
+        self.assertAlmostEqual(48 / 328.5, interval_counts_to_usvh(4))
+        safecast = measurement(0, 40)
+        object.__setattr__(safecast, "device_type", "BNRDD")
+        self.assertAlmostEqual(24 / 334, safecast.interval_dose_rate_usvh)
+
     def test_stable_stop_is_summarized_without_modifying_measurements(self):
         stop = candidate([40, 41, 39, 42, 40])
 
@@ -70,6 +87,8 @@ class RadiationTest(unittest.TestCase):
         self.assertEqual(5, summary.sample_count)
         self.assertEqual(39, summary.minimum_cpm)
         self.assertEqual(42, summary.maximum_cpm)
+        self.assertAlmostEqual(2.0, summary.average_interval_counts)
+        self.assertAlmostEqual(24 / 328.5, summary.interval_dose_rate_usvh)
         self.assertEqual(5, len(stop.measurements))
 
     def test_sudden_radiation_increase_remains_expanded(self):
