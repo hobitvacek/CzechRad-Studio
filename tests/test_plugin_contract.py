@@ -51,14 +51,40 @@ class PluginContractTest(unittest.TestCase):
 
         self.assertEqual(PLUGIN_VERSION, parser["general"]["version"])
 
+    def test_metadata_covers_qgis_3_and_qgis_4(self):
+        parser = configparser.ConfigParser()
+        parser.read(PLUGIN / "metadata.txt", encoding="utf-8")
+        general = parser["general"]
+
+        self.assertEqual("3.22", general["qgisminimumversion"])
+        self.assertEqual("4.99", general["qgismaximumversion"])
+        self.assertNotIn("supportsqt6", general)
+
     def test_first_import_ui_files_exist(self):
         for relative_path in (
             "ui/import_dialog.py",
             "ui/layers.py",
             "ui/monitor_dialog.py",
             "monitoring/files.py",
+            "qt_compat.py",
         ):
             self.assertTrue((PLUGIN / relative_path).is_file(), relative_path)
+
+    def test_sources_parse_with_python_3_8_grammar(self):
+        for path in PLUGIN.rglob("*.py"):
+            source = path.read_text(encoding="utf-8")
+            ast.parse(source, filename=str(path), feature_version=(3, 8))
+            self.assertNotIn("slots=True", source, path)
+
+    def test_qt_version_specific_api_is_isolated(self):
+        compatibility = PLUGIN / "qt_compat.py"
+        for path in PLUGIN.rglob("*.py"):
+            if path == compatibility:
+                continue
+            source = path.read_text(encoding="utf-8")
+            self.assertNotIn("DialogCode", source, path)
+            self.assertNotIn("StandardButton", source, path)
+            self.assertNotIn("QMetaType.Type", source, path)
 
     def test_monitoring_uses_qt_timer_and_read_only_archive_service(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
@@ -75,4 +101,3 @@ class PluginContractTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -1,5 +1,7 @@
 """Settings dialog for read-only card monitoring and local archiving."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from qgis.PyQt.QtCore import QSettings
@@ -16,6 +18,8 @@ from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from ..qt_compat import BUTTON_CANCEL, BUTTON_SAVE
 
 
 class MonitorDialog(QDialog):
@@ -55,11 +59,10 @@ class MonitorDialog(QDialog):
         form.addRow("Místní archiv:", self._path_row(self.archive_edit, archive_button))
 
         buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Save
-            | QDialogButtonBox.StandardButton.Cancel,
+            BUTTON_SAVE | BUTTON_CANCEL,
             parent=self,
         )
-        buttons.button(QDialogButtonBox.StandardButton.Save).setText("Uložit")
+        buttons.button(BUTTON_SAVE).setText("Uložit")
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
@@ -133,4 +136,3 @@ class MonitorDialog(QDialog):
         settings.setValue(self.ARCHIVE_KEY, self.archive_folder)
         settings.setValue(self.ENABLED_KEY, self.enabled)
         super().accept()
-

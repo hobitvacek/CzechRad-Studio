@@ -1,6 +1,6 @@
 # Roadmapa
 
-Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projít automatickými testy a ručním smoke testem v QGIS 4.
+Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projít automatickými testy a ručním smoke testem v podporovaném QGIS 3 i QGIS 4.
 
 ## 0.1.0 – Foundation
 
@@ -23,6 +23,13 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 - [x] Detekce nových a změněných LOGů.
 - [x] Kontrola ustálení souboru a bezpečné opakování.
 - [x] Aktualizace bez duplicit a bez ztráty poslední platné revize.
+
+## 0.3.1 – QGIS 3 / QGIS 4 compatibility
+
+- [x] Jediný kód a instalační ZIP pro QGIS 3.22+ a QGIS 4.x.
+- [x] Qt5/Qt6 kompatibilní enumy dialogů, tlačítek a typů atributů.
+- [x] Import `QAction` a spouštění dialogů nezávislé na verzi Qt.
+- [x] Zachování kompatibility se starším Pythonem používaným linuxovými sestaveními QGIS 3.
 
 ## 0.4.0 – GeoPackage a mise
 
@@ -52,7 +59,7 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 - [ ] Migrace dat mezi podporovanými verzemi.
 - [ ] Česká uživatelská dokumentace.
 - [ ] Stabilní import, monitoring, mise, úseky a kontrolovaný export.
-- [ ] Ověřený postup pro aktuální QGIS 4.
+- [ ] Ověřený postup pro podporovaný QGIS 3 i aktuální QGIS 4.
 
 ## Po verzi 1.0
 
@@ -60,4 +67,3 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 - exporty CSV, GeoJSON, GPX a reporty;
 - další zařízení přes oddělené reader rozhraní;
 - volitelná synchronizace až po samostatném bezpečnostním návrhu.
-

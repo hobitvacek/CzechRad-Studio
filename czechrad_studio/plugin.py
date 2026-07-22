@@ -7,13 +7,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
 from pathlib import Path
 
 from qgis.PyQt.QtCore import QSettings, QTimer
-from qgis.PyQt.QtWidgets import QAction, QDialog, QMessageBox
+from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import QgsProject
 
 from .core.constants import PLUGIN_NAME
 from .importer import analyze_log_files
 from .missions import assess_stop_radiation
 from .monitoring import StableFileTracker, archive_ready_logs
+from .qt_compat import QAction, DIALOG_ACCEPTED, exec_dialog
 from .ui import ImportDialog, MonitorDialog, add_analysis_layers
 
 
@@ -65,7 +66,7 @@ class CzechRadStudioPlugin:
 
     def configure_monitoring(self):
         dialog = MonitorDialog(self.iface.mainWindow())
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        if exec_dialog(dialog) == DIALOG_ACCEPTED:
             self.monitor_tracker = StableFileTracker()
             self._apply_monitor_settings()
 
@@ -140,7 +141,7 @@ class CzechRadStudioPlugin:
 
     def run(self):
         dialog = ImportDialog(self.iface.mainWindow())
-        if dialog.exec() != QDialog.DialogCode.Accepted:
+        if exec_dialog(dialog) != DIALOG_ACCEPTED:
             return
 
         try:
@@ -185,4 +186,3 @@ class CzechRadStudioPlugin:
             f"Kandidátů ztráty GPS: {len(analysis.location_losses)}\n"
             f"Nezpracovaných řádků: {analysis.failure_count}",
         )
-

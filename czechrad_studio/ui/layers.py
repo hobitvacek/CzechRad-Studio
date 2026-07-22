@@ -1,9 +1,10 @@
 """Create QGIS memory layers from portable CzechRad import analysis."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
 
-from qgis.PyQt.QtCore import QMetaType
 from qgis.core import (
     QgsFeature,
     QgsField,
@@ -19,9 +20,10 @@ from qgis.core import (
 from ..core.radiation import CPM_BANDS, RADIATION_BANDS
 from ..importer.session import ImportAnalysis
 from ..missions.aggregation import assess_stop_radiation, summarize_stable_stop
+from ..qt_compat import FIELD_BOOL, FIELD_DOUBLE, FIELD_INT, FIELD_STRING
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class CreatedLayers:
     track: QgsVectorLayer
     candidates: QgsVectorLayer | None
@@ -69,19 +71,19 @@ def _track_layer(
     provider = layer.dataProvider()
     provider.addAttributes(
         [
-            QgsField("timestamp", QMetaType.Type.QString),
-            QgsField("device", QMetaType.Type.QString),
-            QgsField("cpm", QMetaType.Type.Int),
-            QgsField("dose_usvh", QMetaType.Type.Double),
-            QgsField("fast_usvh", QMetaType.Type.Double),
-            QgsField("counts", QMetaType.Type.Int),
-            QgsField("total", QMetaType.Type.Int),
-            QgsField("satellites", QMetaType.Type.Int),
-            QgsField("hdop", QMetaType.Type.Double),
-            QgsField("samples", QMetaType.Type.Int),
-            QgsField("aggregated", QMetaType.Type.Bool),
-            QgsField("cpm_min", QMetaType.Type.Int),
-            QgsField("cpm_max", QMetaType.Type.Int),
+            QgsField("timestamp", FIELD_STRING),
+            QgsField("device", FIELD_STRING),
+            QgsField("cpm", FIELD_INT),
+            QgsField("dose_usvh", FIELD_DOUBLE),
+            QgsField("fast_usvh", FIELD_DOUBLE),
+            QgsField("counts", FIELD_INT),
+            QgsField("total", FIELD_INT),
+            QgsField("satellites", FIELD_INT),
+            QgsField("hdop", FIELD_DOUBLE),
+            QgsField("samples", FIELD_INT),
+            QgsField("aggregated", FIELD_BOOL),
+            QgsField("cpm_min", FIELD_INT),
+            QgsField("cpm_max", FIELD_INT),
         ]
     )
     layer.updateFields()
@@ -171,16 +173,16 @@ def _candidate_layer(analysis: ImportAnalysis, name: str) -> QgsVectorLayer | No
     provider = layer.dataProvider()
     provider.addAttributes(
         [
-            QgsField("kind", QMetaType.Type.QString),
-            QgsField("start_utc", QMetaType.Type.QString),
-            QgsField("end_utc", QMetaType.Type.QString),
-            QgsField("minutes", QMetaType.Type.Double),
-            QgsField("radius_m", QMetaType.Type.Double),
-            QgsField("records", QMetaType.Type.Int),
-            QgsField("baseline", QMetaType.Type.Double),
-            QgsField("stop_cpm", QMetaType.Type.Double),
-            QgsField("increase_pct", QMetaType.Type.Double),
-            QgsField("dose_usvh", QMetaType.Type.Double),
+            QgsField("kind", FIELD_STRING),
+            QgsField("start_utc", FIELD_STRING),
+            QgsField("end_utc", FIELD_STRING),
+            QgsField("minutes", FIELD_DOUBLE),
+            QgsField("radius_m", FIELD_DOUBLE),
+            QgsField("records", FIELD_INT),
+            QgsField("baseline", FIELD_DOUBLE),
+            QgsField("stop_cpm", FIELD_DOUBLE),
+            QgsField("increase_pct", FIELD_DOUBLE),
+            QgsField("dose_usvh", FIELD_DOUBLE),
         ]
     )
     layer.updateFields()
@@ -263,4 +265,3 @@ def add_analysis_layers(
     if candidates is not None:
         project.addMapLayer(candidates)
     return CreatedLayers(track=track, candidates=candidates)
-

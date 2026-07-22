@@ -1,5 +1,7 @@
 """File selection dialog for the first CzechRad Studio import workflow."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from qgis.PyQt.QtCore import QSettings
@@ -18,6 +20,8 @@ from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from ..qt_compat import BUTTON_CANCEL, BUTTON_OK
 
 
 class ImportDialog(QDialog):
@@ -65,11 +69,10 @@ class ImportDialog(QDialog):
         note.setWordWrap(True)
 
         buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok
-            | QDialogButtonBox.StandardButton.Cancel,
+            BUTTON_OK | BUTTON_CANCEL,
             parent=self,
         )
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Načíst do mapy")
+        buttons.button(BUTTON_OK).setText("Načíst do mapy")
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
@@ -146,4 +149,3 @@ class ImportDialog(QDialog):
             QMessageBox.warning(self, "CzechRad Studio", "Vyber platný NOGPS.LOG.")
             return
         super().accept()
-

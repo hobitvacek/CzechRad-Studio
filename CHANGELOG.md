@@ -6,6 +6,13 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ### Added
 
+- One shared plugin package for QGIS 3.22+ / Qt 5 and QGIS 4.x / Qt 6.
+- A focused Qt compatibility layer for dialog enums, standard buttons,
+  attribute field types, `QAction` and modal dialog execution.
+- Python 3.8/3.9-compatible domain dataclasses for older Linux QGIS 3 builds.
+- Linux CI checks on Python 3.8 and Python 3.12 for the portable core and the
+  simulated Qt5/Qt6 compatibility surface.
+
 - Read-only monitoring of a configured card or LOG folder every five seconds.
 - Import only after two unchanged file observations.
 - SHA-256 deduplication, verified archive copies and collision numbering (`-1`, `-2`, …).

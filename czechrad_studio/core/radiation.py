@@ -23,7 +23,7 @@ def interval_counts_to_usvh(interval_counts: float) -> float:
     return interval_counts * 12 / CZECHRAD_CPM_PER_USVH
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class RadiationBand:
     """A neutral display interval; bands are not safety classifications."""
 
@@ -48,4 +48,3 @@ CPM_BANDS = (
     RadiationBand(164.0, 329.0, "245,124,0,230", "164–329 CPM"),
     RadiationBand(329.0, 328_500_000.0, "215,25,28,235", "> 329 CPM"),
 )
-

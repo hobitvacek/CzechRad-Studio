@@ -1,5 +1,7 @@
 """Detect spatially bounded stop candidates in a trusted GPS track."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from math import asin, cos, radians, sin, sqrt
@@ -9,7 +11,7 @@ from ..core.models import CzechRadMeasurement
 from ..importer.validation import validate_measurement
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class StopCandidate:
     """A prolonged spatial cluster that may represent a real stop.
 
@@ -166,4 +168,3 @@ def detect_stop_candidates(
             merged.append(candidate)
 
     return tuple(merged)
-

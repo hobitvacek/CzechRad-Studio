@@ -1,5 +1,7 @@
 """Detect candidates for indoor or otherwise GPS-obscured measurement."""
 
+from __future__ import annotations
+
 from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -8,7 +10,7 @@ from ..core.models import CzechRadMeasurement
 from ..importer.validation import validate_measurement
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class LocationLossEpisode:
     """A continuous candidate period without a trusted GPS position.
 
@@ -107,4 +109,3 @@ def detect_location_loss_episodes(
         )
 
     return tuple(episodes)
-

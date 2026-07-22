@@ -1,5 +1,7 @@
 """QGIS-independent domain types for CzechRad measurements."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -23,7 +25,7 @@ class LocationQuality(str, Enum):
     NONE = "none"
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class CzechRadMeasurement:
     """One parsed ``$CZRA1`` record without QGIS-specific objects."""
 
@@ -70,7 +72,7 @@ class CzechRadMeasurement:
         return interval_counts_to_usvh(self.interval_counts)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class MeasurementValidation:
     """Independent validation result for a parsed measurement."""
 
