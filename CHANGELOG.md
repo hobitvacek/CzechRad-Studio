@@ -6,6 +6,17 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ### Added
 
+- Versioned GeoPackage schema for devices, missions, daily source logs,
+  immutable revisions and validated measurements.
+- Transactional import with SHA-256 deduplication and preservation of the
+  previous valid revision when a daily LOG changes.
+- Mission creation and assignment of multiple daily logs through a new QGIS
+  project dialog.
+- Persistence of manual imports and monitored card imports into the active
+  mission, including radiation records without usable GPS geometry.
+- NOGPS revision identity based only on records matched to the imported day,
+  preventing cumulative-file growth from revising unrelated older tracks.
+
 - One shared plugin package for QGIS 3.22+ / Qt 5 and QGIS 4.x / Qt 6.
 - A focused Qt compatibility layer for dialog enums, standard buttons,
   attribute field types, `QAction` and modal dialog execution.
