@@ -226,6 +226,9 @@ class CzechRadStudioPlugin:
             self.iface.mainWindow(),
             PLUGIN_NAME,
             "Měření bylo načteno.\n\n"
+            f"Přístroj: {analysis.track.measurements[0].device_family} "
+            f"({analysis.track.measurements[0].device_type}, "
+            f"č. {analysis.track.measurements[0].device_id})\n"
             f"Datum (UTC): {analysis.expected_date.isoformat()}\n"
             f"Záznamů v denním LOGu: {len(analysis.track.measurements)}\n"
             f"Bodů v mapě: {len(analysis.geometry_measurements)}\n"
