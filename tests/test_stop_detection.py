@@ -23,11 +23,11 @@ def point(
         cpm=20,
         interval_counts=2,
         total_counts=int(timestamp.timestamp()),
+        radiation_status="A",
         gps_status="A",
         latitude=latitude,
         longitude=longitude,
         altitude_m=200.0,
-        altitude_status="A",
         satellites=8 if trusted else 0,
         hdop_raw=100 if trusted else 9999,
         expected_checksum=1,
@@ -123,4 +123,3 @@ class StopDetectionTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

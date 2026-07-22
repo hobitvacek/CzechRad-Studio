@@ -6,13 +6,14 @@ Projekt navazuje na [Radiation ToolBox Plugin](https://gitlab.com/opengeolabs/ra
 
 ## Stav projektu
 
-Aktuální experimentální verze `0.2.2` obsahuje první použitelný import:
+Aktuální experimentální verze `0.3.0` obsahuje první použitelný import a monitoring:
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
 - zobrazení CPM i dopočteného µSv/h s barevnou legendou;
 - volitelné sloučení stabilních dlouhých zastavení pouze pro zobrazení;
 - označení zastavení se zvýšenou radiací jako možného stacionárního měření;
+- bezpečné sledování karty nebo složky, archivaci a automatickou obnovu vrstev;
 - modulární adresáře pro import, monitoring, databázi, mise, úseky a export SÚRO;
 - počáteční architektura, vize a roadmapa;
 - základní testy kontraktu pluginu bez závislosti na QGIS.

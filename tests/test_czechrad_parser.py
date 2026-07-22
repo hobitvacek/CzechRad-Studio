@@ -7,6 +7,7 @@ from pathlib import Path
 from czechrad_studio.core import LocationQuality, TimeQuality
 from czechrad_studio.importer import (
     CzechRadParseError,
+    calculate_checksum,
     parse_log,
     parse_measurement_line,
     validate_measurement,
@@ -59,6 +60,40 @@ class CzechRadParserTest(unittest.TestCase):
         self.assertFalse(validation.has_geometry)
         self.assertIn("untrusted_gps_fix", validation.issues)
 
+    def test_radiation_status_is_independent_from_gps_status(self):
+        payload = (
+            "CZRA1,TEST,2026-07-17T15:08:42Z,0,4,4,V,"
+            "5000.0000,N,01400.0000,E,250.00,A,8,100"
+        )
+        measurement = parse_measurement_line(
+            f"${payload}*{calculate_checksum(payload):X}"
+        )
+        validation = validate_measurement(
+            measurement, expected_date=date(2026, 7, 17)
+        )
+
+        self.assertEqual("V", measurement.radiation_status)
+        self.assertEqual("A", measurement.gps_status)
+        self.assertTrue(validation.has_geometry)
+
+    def test_invalid_coordinate_text_keeps_radiation_without_geometry(self):
+        line = (
+            "$CZRA1,0796,2026-07-21T03:03:34Z,27,5,23,V,"
+            "6027.4121,N,-04210.9048,W,16107.92,A,0,9999*39"
+        )
+        measurement = parse_measurement_line(line)
+        validation = validate_measurement(
+            measurement, expected_date=date(2026, 7, 21)
+        )
+
+        self.assertTrue(measurement.checksum_valid)
+        self.assertIsNone(measurement.latitude)
+        self.assertIsNone(measurement.longitude)
+        self.assertIsNotNone(measurement.coordinate_issue)
+        self.assertFalse(validation.has_geometry)
+        self.assertTrue(validation.usable_without_location)
+        self.assertIn("invalid_coordinate_encoding", validation.issues)
+
     def test_device_default_date_is_untrusted(self):
         validation = validate_measurement(
             self.parsed.measurements[3], expected_date=date(2026, 7, 17)
@@ -99,4 +134,3 @@ class CzechRadParserTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
