@@ -221,6 +221,7 @@ class CzechRadStudioPlugin:
             database_message = (
                 f"\nDatabáze: {disposition_labels[stored.disposition]} "
                 f"({stored.measurement_count} měření)"
+                f"\nAutomatické návrhy úseků: {stored.proposal_count}"
             )
         QMessageBox.information(
             self.iface.mainWindow(),

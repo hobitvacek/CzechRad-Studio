@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime, timezone
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 GPKG_APPLICATION_ID = 0x47504B47
 GPKG_USER_VERSION = 10300
 
@@ -203,6 +203,84 @@ def _migration_2(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_3(connection: sqlite3.Connection) -> None:
+    """Add revision-scoped proposals and stable user-owned segments."""
+
+    connection.executescript(
+        """
+        CREATE TABLE segment_proposals (
+            id TEXT PRIMARY KEY,
+            source_log_id TEXT NOT NULL REFERENCES source_logs(id) ON DELETE CASCADE,
+            revision_id TEXT NOT NULL REFERENCES source_log_revisions(id) ON DELETE CASCADE,
+            proposal_type TEXT NOT NULL
+                CHECK (proposal_type IN ('stationary', 'gps_loss', 'recording_gap')),
+            started_at_utc TEXT NOT NULL,
+            ended_at_utc TEXT NOT NULL,
+            confidence REAL NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
+            reason TEXT NOT NULL,
+            sample_count INTEGER NOT NULL,
+            center_latitude REAL,
+            center_longitude REAL,
+            created_at_utc TEXT NOT NULL,
+            UNIQUE (revision_id, proposal_type, started_at_utc, ended_at_utc)
+        );
+
+        CREATE INDEX segment_proposals_source_revision
+            ON segment_proposals(source_log_id, revision_id, started_at_utc);
+
+        CREATE TABLE measurement_segments (
+            id TEXT PRIMARY KEY,
+            source_log_id TEXT NOT NULL REFERENCES source_logs(id) ON DELETE CASCADE,
+            mission_id TEXT REFERENCES missions(id) ON DELETE SET NULL,
+            started_at_utc TEXT NOT NULL,
+            ended_at_utc TEXT NOT NULL,
+            segment_type TEXT NOT NULL DEFAULT 'unclassified'
+                CHECK (segment_type IN ('unclassified', 'walking', 'car',
+                    'public_transport', 'stationary', 'indoor', 'excluded')),
+            title TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'draft'
+                CHECK (status IN ('draft', 'confirmed', 'excluded')),
+            include_in_suro INTEGER NOT NULL DEFAULT 1
+                CHECK (include_in_suro IN (0, 1)),
+            detector_height_m REAL,
+            detector_orientation TEXT NOT NULL DEFAULT '',
+            route_description TEXT NOT NULL DEFAULT '',
+            notes TEXT NOT NULL DEFAULT '',
+            created_at_utc TEXT NOT NULL,
+            updated_at_utc TEXT NOT NULL,
+            CHECK (ended_at_utc >= started_at_utc)
+        );
+
+        CREATE INDEX measurement_segments_source_time
+            ON measurement_segments(source_log_id, started_at_utc, ended_at_utc);
+        """
+    )
+    for table_name, identifier, description in (
+        (
+            "segment_proposals",
+            "Automatic segment proposals",
+            "Revision-scoped suggestions requiring user confirmation",
+        ),
+        (
+            "measurement_segments",
+            "Measurement segments",
+            "Stable user-owned time ranges and SÚRO metadata",
+        ),
+    ):
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO gpkg_contents
+            (table_name, data_type, identifier, description, srs_id)
+            VALUES (?, 'attributes', ?, ?, NULL)
+            """,
+            (table_name, identifier, description),
+        )
+    connection.execute(
+        "INSERT INTO crs_schema_migrations(version, applied_at_utc) VALUES (?, ?)",
+        (3, utc_now_text()),
+    )
+
+
 def migrate(connection: sqlite3.Connection) -> int:
     """Initialize or upgrade a CzechRad Studio GeoPackage transactionally."""
 
@@ -225,6 +303,9 @@ def migrate(connection: sqlite3.Connection) -> int:
         if current < 2:
             _migration_2(connection)
             current = 2
+        if current < 3:
+            _migration_3(connection)
+            current = 3
         if current > SCHEMA_VERSION:
             raise RuntimeError(
                 "Databáze byla vytvořena novější verzí CzechRad Studia "
