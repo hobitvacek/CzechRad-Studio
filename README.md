@@ -6,7 +6,7 @@ Projekt navazuje na [Radiation ToolBox Plugin](https://gitlab.com/opengeolabs/ra
 
 ## Stav projektu
 
-Aktuální experimentální verze `0.5.0` obsahuje použitelný import, monitoring, projektovou databázi, první základ měřicích úseků a společnou podporu Qt5/Qt6:
+Aktuální experimentální verze `0.5.1` obsahuje použitelný import, monitoring, projektovou databázi, první editor měřicích úseků a společnou podporu Qt5/Qt6:
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
@@ -25,11 +25,14 @@ Aktuální experimentální verze `0.5.0` obsahuje použitelný import, monitori
   delších mezer v záznamu;
 - oddělené uložení návrhů a uživatelských úseků, které se při nové revizi
   denního LOGu neztratí;
+- přehled nevyřízených návrhů v aktivní misi, jejich potvrzení nebo přeskočení;
+- doplnění typu úseku, výšky a orientace detektoru, popisu trasy, poznámky a
+  volby pro budoucí podklady SÚRO;
 - modulární adresáře pro import, monitoring, databázi, mise, úseky a export SÚRO;
 - počáteční architektura, vize a roadmapa;
 - základní testy kontraktu pluginu bez závislosti na QGIS.
 
-Ruční editor hranic a metadat úseků a export pro SÚRO zatím nejsou implementovány.
+Ruční kreslení hranic úseků v mapě a export pro SÚRO zatím nejsou implementovány.
 
 ## Instalace vývojové verze
 
@@ -42,6 +45,9 @@ Plugin je v této fázi označen jako experimentální a je určen pouze pro vý
 Po instalaci otevřete **Zásuvné moduly → CzechRad Studio → Projekt a aktivní mise…**,
 vytvořte nebo otevřete soubor `.gpkg` a založte misi. Následující ruční i
 automatické importy se budou do aktivní mise ukládat bez duplicit.
+
+Automatické návrhy zkontrolujete přes **Zásuvné moduly → CzechRad Studio →
+Měřicí úseky…**. Potvrzení nikdy neupravuje původní LOG.
 
 ## Dokumentace
 

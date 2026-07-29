@@ -73,6 +73,15 @@ def propose_segments(
     )
     for previous, current in zip(trusted_time, trusted_time[1:]):
         if current.timestamp - previous.timestamp >= recording_gap:
+            covered_by_location_loss = any(
+                episode.start < current.timestamp
+                and episode.end > previous.timestamp
+                for episode in analysis.location_losses
+            )
+            if covered_by_location_loss:
+                # A correlated NOGPS episode explains this apparent track gap.
+                # Showing both proposals would ask the user about one event twice.
+                continue
             proposals.append(
                 SegmentProposal(
                     proposal_type=ProposalType.RECORDING_GAP,
@@ -89,4 +98,3 @@ def propose_segments(
     return tuple(
         sorted(proposals, key=lambda item: (item.start, item.proposal_type.value))
     )
-

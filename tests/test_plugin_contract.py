@@ -66,6 +66,7 @@ class PluginContractTest(unittest.TestCase):
             "ui/layers.py",
             "ui/monitor_dialog.py",
             "ui/project_dialog.py",
+            "ui/segments_dialog.py",
             "monitoring/files.py",
             "database/schema.py",
             "database/repository.py",
@@ -101,6 +102,12 @@ class PluginContractTest(unittest.TestCase):
         self.assertIn("ProjectDialog", source)
         self.assertIn("GeoPackageRepository", source)
         self.assertGreaterEqual(source.count("self._store_analysis("), 2)
+
+    def test_segment_review_is_available_from_plugin_menu(self):
+        source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
+
+        self.assertIn("SegmentsDialog", source)
+        self.assertIn("Měřicí úseky…", source)
 
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")

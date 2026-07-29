@@ -16,7 +16,13 @@ from .importer import analyze_log_files
 from .missions import assess_stop_radiation
 from .monitoring import StableFileTracker, archive_ready_logs
 from .qt_compat import QAction, DIALOG_ACCEPTED, exec_dialog
-from .ui import ImportDialog, MonitorDialog, ProjectDialog, add_analysis_layers
+from .ui import (
+    ImportDialog,
+    MonitorDialog,
+    ProjectDialog,
+    SegmentsDialog,
+    add_analysis_layers,
+)
 
 
 class CzechRadStudioPlugin:
@@ -27,6 +33,7 @@ class CzechRadStudioPlugin:
         self.action = None
         self.project_action = None
         self.monitor_action = None
+        self.segments_action = None
         self.monitor_timer = QTimer(self.iface.mainWindow())
         self.monitor_timer.setInterval(5000)
         self.monitor_timer.timeout.connect(self._poll_monitor)
@@ -55,6 +62,12 @@ class CzechRadStudioPlugin:
         )
         self.monitor_action.triggered.connect(self.configure_monitoring)
         self.iface.addPluginToMenu(f"&{PLUGIN_NAME}", self.monitor_action)
+
+        self.segments_action = QAction(
+            "Měřicí úseky…", self.iface.mainWindow()
+        )
+        self.segments_action.triggered.connect(self.review_segments)
+        self.iface.addPluginToMenu(f"&{PLUGIN_NAME}", self.segments_action)
         self._apply_monitor_settings()
 
     def unload(self):
@@ -70,6 +83,10 @@ class CzechRadStudioPlugin:
             self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.monitor_action)
             self.monitor_action.deleteLater()
             self.monitor_action = None
+        if self.segments_action is not None:
+            self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.segments_action)
+            self.segments_action.deleteLater()
+            self.segments_action = None
 
         self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.action)
         self.iface.removeToolBarIcon(self.action)
@@ -90,6 +107,21 @@ class CzechRadStudioPlugin:
             self.iface.messageBar().pushSuccess(
                 PLUGIN_NAME, f"Aktivní mise: {mission.name}"
             )
+
+    def review_segments(self):
+        database_path, mission_id = ProjectDialog.active_configuration()
+        if not database_path or not mission_id:
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                "Nejprve vyber projektový GeoPackage a aktivní misi v nabídce "
+                "„Projekt a aktivní mise…“.",
+            )
+            return
+        dialog = SegmentsDialog(
+            database_path, mission_id, self.iface.mainWindow()
+        )
+        exec_dialog(dialog)
 
     @staticmethod
     def _store_analysis(analysis, track_path, nogps_path=None):
