@@ -175,6 +175,10 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual(ProposalType.STATIONARY, proposals[0].proposal_type)
         self.assertEqual("07960723.LOG", proposals[0].source_name)
         self.assertEqual("2026-07-23", proposals[0].logical_date)
+        positions = self.repository.list_proposal_positions(proposals[0].id)
+        self.assertEqual(37, len(positions))
+        self.assertAlmostEqual(14.0, positions[0][0])
+        self.assertAlmostEqual(50.0, positions[0][1])
 
         segment = self.repository.confirm_segment_proposal(
             proposals[0].id,

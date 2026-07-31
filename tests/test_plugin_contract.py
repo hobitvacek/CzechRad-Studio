@@ -108,6 +108,8 @@ class PluginContractTest(unittest.TestCase):
 
         self.assertIn("SegmentsDialog", source)
         self.assertIn("Měřicí úseky…", source)
+        self.assertIn("proposal_focus_requested", source)
+        self.assertIn("zoomToActiveLayer()", source)
 
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")

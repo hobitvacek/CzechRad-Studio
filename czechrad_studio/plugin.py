@@ -8,7 +8,14 @@ from pathlib import Path
 
 from qgis.PyQt.QtCore import QSettings, QTimer
 from qgis.PyQt.QtWidgets import QMessageBox
-from qgis.core import QgsProject
+from qgis.core import (
+    QgsFeature,
+    QgsGeometry,
+    QgsMarkerSymbol,
+    QgsPointXY,
+    QgsProject,
+    QgsVectorLayer,
+)
 
 from .core.constants import PLUGIN_NAME
 from .database import GeoPackageRepository, ImportDisposition
@@ -42,6 +49,7 @@ class CzechRadStudioPlugin:
         self._monitored_layers = {}
         self._loaded_digests = set()
         self._latest_nogps = None
+        self._proposal_focus_layer = None
 
     def initGui(self):  # noqa: N802 - QGIS requires this name
         self.action = QAction(PLUGIN_NAME, self.iface.mainWindow())
@@ -75,6 +83,7 @@ class CzechRadStudioPlugin:
             return
 
         self.monitor_timer.stop()
+        self._remove_proposal_focus_layer()
         if self.project_action is not None:
             self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.project_action)
             self.project_action.deleteLater()
@@ -121,7 +130,61 @@ class CzechRadStudioPlugin:
         dialog = SegmentsDialog(
             database_path, mission_id, self.iface.mainWindow()
         )
+        dialog.proposal_focus_requested.connect(
+            lambda proposal: self._focus_segment_proposal(
+                database_path, proposal
+            )
+        )
         exec_dialog(dialog)
+
+    def _remove_proposal_focus_layer(self):
+        if self._proposal_focus_layer is None:
+            return
+        QgsProject.instance().removeMapLayer(self._proposal_focus_layer.id())
+        self._proposal_focus_layer = None
+
+    def _focus_segment_proposal(self, database_path, proposal):
+        repository = GeoPackageRepository(database_path)
+        positions = repository.list_proposal_positions(proposal.id)
+        if not positions and proposal.center_longitude is not None:
+            positions = ((proposal.center_longitude, proposal.center_latitude),)
+        if not positions:
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                "Návrh nemá použitelnou polohu pro zobrazení v mapě.",
+            )
+            return
+
+        self._remove_proposal_focus_layer()
+        layer = QgsVectorLayer(
+            "Point?crs=EPSG:4326", "CzechRad – vybraný návrh", "memory"
+        )
+        features = []
+        for longitude, latitude in positions:
+            feature = QgsFeature()
+            feature.setGeometry(
+                QgsGeometry.fromPointXY(QgsPointXY(longitude, latitude))
+            )
+            features.append(feature)
+        layer.dataProvider().addFeatures(features)
+        layer.updateExtents()
+        symbol = QgsMarkerSymbol.createSimple(
+            {
+                "name": "circle",
+                "color": "210,0,255,210",
+                "size": "4.0",
+                "outline_color": "255,255,255,255",
+                "outline_width": "0.6",
+            }
+        )
+        layer.renderer().setSymbol(symbol)
+        QgsProject.instance().addMapLayer(layer)
+        self._proposal_focus_layer = layer
+        self.iface.setActiveLayer(layer)
+        self.iface.zoomToActiveLayer()
+        if self.iface.mapCanvas().scale() < 2500:
+            self.iface.mapCanvas().zoomScale(2500)
 
     @staticmethod
     def _store_analysis(analysis, track_path, nogps_path=None):

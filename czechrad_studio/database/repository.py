@@ -11,7 +11,7 @@ from enum import Enum
 from pathlib import Path
 from uuid import uuid4
 
-from ..core.models import MeasurementValidation, TimeQuality
+from ..core.models import LocationQuality, MeasurementValidation, TimeQuality
 from ..importer.session import ImportAnalysis
 from ..importer.validation import validate_measurement
 from ..missions.model import Mission
@@ -634,6 +634,49 @@ class GeoPackageRepository:
             )
             if cursor.rowcount != 1:
                 raise KeyError("Návrh nebyl nalezen nebo už byl zpracován.")
+
+    def list_proposal_positions(
+        self, proposal_id: str
+    ) -> tuple[tuple[float, float], ...]:
+        """Return trusted current-revision map positions inside a proposal.
+
+        Coordinates are returned as ``(longitude, latitude)`` so the QGIS
+        presentation layer can create WGS 84 geometries without depending on
+        database implementation details.
+        """
+
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                """
+                SELECT p.revision_id, p.started_at_utc, p.ended_at_utc
+                FROM segment_proposals p
+                JOIN source_log_revisions r
+                    ON r.id = p.revision_id AND r.is_current = 1
+                WHERE p.id = ?
+                """,
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError("Návrh nebyl nalezen v aktuální revizi LOGu.")
+            positions = connection.execute(
+                """
+                SELECT longitude, latitude FROM measurements
+                WHERE revision_id = ?
+                  AND measured_at_utc BETWEEN ? AND ?
+                  AND latitude IS NOT NULL AND longitude IS NOT NULL
+                  AND location_quality = ?
+                ORDER BY measured_at_utc, sequence_no
+                """,
+                (
+                    row["revision_id"], row["started_at_utc"],
+                    row["ended_at_utc"], LocationQuality.VALID.value,
+                ),
+            ).fetchall()
+        return tuple(
+            (position["longitude"], position["latitude"])
+            for position in positions
+        )
 
     def list_segments(self, source_log_id: str) -> tuple[MeasurementSegment, ...]:
         """List stable user segments independently from automatic proposals."""

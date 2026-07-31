@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -50,6 +51,8 @@ def _enum(owner, scoped_name, member_name):
 
 class SegmentsDialog(QDialog):
     """Modal, map-independent first editor for one mission's proposals."""
+
+    proposal_focus_requested = pyqtSignal(object)
 
     def __init__(self, database_path, mission_id: str, parent=None):
         super().__init__(parent)
@@ -121,9 +124,12 @@ class SegmentsDialog(QDialog):
         self.confirm_button.clicked.connect(self._confirm)
         self.dismiss_button = QPushButton("Přeskočit návrh", self)
         self.dismiss_button.clicked.connect(self._dismiss)
+        self.focus_button = QPushButton("Ukázat v mapě", self)
+        self.focus_button.clicked.connect(self._focus)
         close_button = QPushButton("Zavřít", self)
         close_button.clicked.connect(self.accept)
         buttons = QHBoxLayout()
+        buttons.addWidget(self.focus_button)
         buttons.addWidget(self.confirm_button)
         buttons.addWidget(self.dismiss_button)
         buttons.addStretch(1)
@@ -183,6 +189,7 @@ class SegmentsDialog(QDialog):
         else:
             self.confirm_button.setEnabled(False)
             self.dismiss_button.setEnabled(False)
+            self.focus_button.setEnabled(False)
             self.hint_label.setText("")
 
     def _selected(self):
@@ -208,6 +215,7 @@ class SegmentsDialog(QDialog):
         is_gap = proposal.proposal_type is ProposalType.RECORDING_GAP
         self.confirm_button.setEnabled(not is_gap)
         self.dismiss_button.setEnabled(True)
+        self.focus_button.setEnabled(True)
         if is_gap:
             self.hint_label.setText(
                 "Toto je návrh hranice mezi úseky, nikoli samotný měřicí "
@@ -219,6 +227,11 @@ class SegmentsDialog(QDialog):
                 "Zkontroluj typ a doplň pouze údaje, které znáš. Vše lze "
                 "později upravit."
             )
+
+    def _focus(self):
+        proposal = self._selected()
+        if proposal is not None:
+            self.proposal_focus_requested.emit(proposal)
 
     def _confirm(self):
         proposal = self._selected()
