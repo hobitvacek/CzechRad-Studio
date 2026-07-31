@@ -4,7 +4,7 @@ import shutil
 import sqlite3
 import tempfile
 import unittest
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from czechrad_studio.database import (
@@ -46,6 +46,12 @@ class GeoPackageRepositoryTest(unittest.TestCase):
             device_columns = {
                 row[1] for row in connection.execute("PRAGMA table_info(devices)")
             }
+            proposal_columns = {
+                row[1]
+                for row in connection.execute(
+                    "PRAGMA table_info(segment_proposals)"
+                )
+            }
         finally:
             connection.close()
 
@@ -57,6 +63,8 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertIn("device_type", device_columns)
         self.assertIn("device_family", device_columns)
         self.assertIn("calibration_cpm_per_usvh", device_columns)
+        self.assertIn("status", proposal_columns)
+        self.assertIn("resolved_segment_id", proposal_columns)
 
     def test_import_stores_detected_device_metadata(self):
         analysis = analyze_log_files(self.track)
@@ -135,6 +143,92 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual(1, len(proposals))
         self.assertEqual(ProposalType.RECORDING_GAP, proposals[0].proposal_type)
         self.assertEqual(stored.revision_id, proposals[0].revision_id)
+
+    def test_mission_proposal_can_be_confirmed_with_suro_metadata(self):
+        stationary_track = self.root / "07960723.LOG"
+        start = datetime(2026, 7, 23, 8, 0, tzinfo=timezone.utc)
+        timestamps = tuple(
+            (start + timedelta(seconds=5 * index)).strftime("%H:%M:%S")
+            for index in range(37)
+        )
+        payloads = tuple(
+            f"CZRA1,TEST,2026-07-23T{at}Z,40,3,{100 + index},A,"
+            "5000.0000,N,01400.0000,E,250.00,A,8,100"
+            for index, at in enumerate(timestamps)
+        )
+        stationary_track.write_text(
+            "\n".join(
+                f"${payload}*{calculate_checksum(payload):X}"
+                for payload in payloads
+            ) + "\n",
+            encoding="utf-8",
+        )
+        mission = self.repository.create_mission("Kontrola úseků")
+        stored = self.repository.store_import(
+            analyze_log_files(stationary_track),
+            stationary_track,
+            mission_id=mission.id,
+        )
+
+        proposals = self.repository.list_mission_segment_proposals(mission.id)
+        self.assertEqual(1, len(proposals))
+        self.assertEqual(ProposalType.STATIONARY, proposals[0].proposal_type)
+        self.assertEqual("07960723.LOG", proposals[0].source_name)
+        self.assertEqual("2026-07-23", proposals[0].logical_date)
+        positions = self.repository.list_proposal_positions(proposals[0].id)
+        self.assertEqual(37, len(positions))
+        self.assertAlmostEqual(14.0, positions[0][0])
+        self.assertAlmostEqual(50.0, positions[0][1])
+
+        segment = self.repository.confirm_segment_proposal(
+            proposals[0].id,
+            mission.id,
+            segment_type=SegmentType.STATIONARY,
+            title="Kontrolní měření",
+            detector_height_m=1.0,
+            detector_orientation="dolů",
+            route_description="Náměstí",
+            notes="Ověřeno uživatelem",
+        )
+
+        self.assertEqual(stored.source_log_id, segment.source_log_id)
+        self.assertEqual("confirmed", segment.status)
+        self.assertEqual(1.0, segment.detector_height_m)
+        self.assertEqual("dolů", segment.detector_orientation)
+        self.assertEqual((), self.repository.list_mission_segment_proposals(mission.id))
+        all_proposals = self.repository.list_mission_segment_proposals(
+            mission.id, pending_only=False
+        )
+        self.assertEqual("accepted", all_proposals[0].status)
+
+    def test_pending_proposal_can_be_dismissed(self):
+        mission = self.repository.create_mission("Přeskočení")
+        gap_track = self.root / "07960724.LOG"
+        payloads = (
+            "CZRA1,TEST,2026-07-24T08:00:00Z,40,3,100,A,"
+            "5000.0000,N,01400.0000,E,250.00,A,8,100",
+            "CZRA1,TEST,2026-07-24T08:10:00Z,41,4,104,A,"
+            "5000.0100,N,01400.0100,E,250.00,A,8,100",
+        )
+        gap_track.write_text(
+            "\n".join(
+                f"${payload}*{calculate_checksum(payload):X}"
+                for payload in payloads
+            ) + "\n",
+            encoding="utf-8",
+        )
+        self.repository.store_import(
+            analyze_log_files(gap_track), gap_track, mission_id=mission.id
+        )
+        proposal = self.repository.list_mission_segment_proposals(mission.id)[0]
+
+        self.repository.dismiss_segment_proposal(proposal.id)
+
+        self.assertEqual((), self.repository.list_mission_segment_proposals(mission.id))
+        reviewed = self.repository.list_mission_segment_proposals(
+            mission.id, pending_only=False
+        )
+        self.assertEqual("dismissed", reviewed[0].status)
 
     def test_same_import_is_not_duplicated_and_changed_file_is_revision(self):
         mission = self.repository.create_mission("Testovací mise")

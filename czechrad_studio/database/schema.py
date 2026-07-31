@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime, timezone
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 GPKG_APPLICATION_ID = 0x47504B47
 GPKG_USER_VERSION = 10300
 
@@ -281,6 +281,36 @@ def _migration_3(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_4(connection: sqlite3.Connection) -> None:
+    """Track proposal review and the segment created from it."""
+
+    columns = {
+        row[1] for row in connection.execute(
+            "PRAGMA table_info(segment_proposals)"
+        )
+    }
+    additions = (
+        ("status", "TEXT NOT NULL DEFAULT 'pending'"),
+        ("resolved_segment_id", "TEXT"),
+        ("resolved_at_utc", "TEXT"),
+    )
+    for name, declaration in additions:
+        if name not in columns:
+            connection.execute(
+                f"ALTER TABLE segment_proposals ADD COLUMN {name} {declaration}"
+            )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS segment_proposals_status
+        ON segment_proposals(status, source_log_id, started_at_utc)
+        """
+    )
+    connection.execute(
+        "INSERT INTO crs_schema_migrations(version, applied_at_utc) VALUES (?, ?)",
+        (4, utc_now_text()),
+    )
+
+
 def migrate(connection: sqlite3.Connection) -> int:
     """Initialize or upgrade a CzechRad Studio GeoPackage transactionally."""
 
@@ -306,6 +336,9 @@ def migrate(connection: sqlite3.Connection) -> int:
         if current < 3:
             _migration_3(connection)
             current = 3
+        if current < 4:
+            _migration_4(connection)
+            current = 4
         if current > SCHEMA_VERSION:
             raise RuntimeError(
                 "Databáze byla vytvořena novější verzí CzechRad Studia "

@@ -38,6 +38,9 @@ class SegmentProposal:
     id: str | None = None
     source_log_id: str | None = None
     revision_id: str | None = None
+    source_name: str | None = None
+    logical_date: str | None = None
+    status: str = "pending"
 
 
 @dataclass(frozen=True)

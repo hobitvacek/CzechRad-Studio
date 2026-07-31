@@ -80,6 +80,29 @@ class SegmentProposalTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             propose_segments(analysis, recording_gap=timedelta(0))
 
+    def test_does_not_duplicate_gap_explained_by_gps_loss(self):
+        start = datetime(2026, 7, 22, 8, 0, tzinfo=timezone.utc)
+        entry = measurement(start)
+        exit_point = measurement(start + timedelta(minutes=10))
+        hidden = measurement(start + timedelta(minutes=2), None, None)
+        loss = LocationLossEpisode(
+            start=hidden.timestamp,
+            end=start + timedelta(minutes=9),
+            measurements=(hidden,),
+            entry_anchor=entry,
+            exit_anchor=exit_point,
+        )
+        analysis = SimpleNamespace(
+            stop_candidates=(), location_losses=(loss,),
+            geometry_measurements=(entry, exit_point),
+            track_validations=(validation(entry), validation(exit_point)),
+        )
+
+        proposals = propose_segments(analysis)
+
+        self.assertEqual(1, len(proposals))
+        self.assertEqual(ProposalType.GPS_LOSS, proposals[0].proposal_type)
+
 
 if __name__ == "__main__":
     unittest.main()

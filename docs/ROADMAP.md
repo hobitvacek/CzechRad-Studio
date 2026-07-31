@@ -41,7 +41,9 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 ## 0.5.0 – Měřicí úseky
 
 - [ ] Rozdělení podle času a bodů v mapě.
-- [ ] Typ pohybu, výška, orientace a popis trasy.
+- [x] Přehled a potvrzování automatických návrhů v aktivní misi.
+- [x] Zvýraznění vybraného automatického návrhu v mapě.
+- [x] Typ pohybu, výška, orientace a popis trasy u potvrzených návrhů.
 - [ ] Zvýraznění nezařazených nových dat.
 - [x] Databázový model návrhů a uživatelských úseků odolný vůči revizím LOGu.
 - [x] Návrhy podle delších mezer, zastavení a ztráty GPS.

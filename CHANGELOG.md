@@ -4,6 +4,20 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Added a temporary high-contrast QGIS map layer for locating a selected
+  segment proposal without modifying the source LOG or stored measurements.
+- Fixed proposal highlighting not appearing while the segment editor blocked
+  QGIS canvas repaint; the editor is now non-modal and explicitly refreshes
+  the map after zooming.
+- Added a QGIS 3/4 segment-review dialog for proposals in the active mission.
+- Added confirmation of stop and GPS-loss proposals with movement type, title,
+  detector height and orientation, route description, notes and SÚRO inclusion.
+- Added proposal review states so accepted or intentionally skipped suggestions
+  do not repeatedly return after reopening the project.
+- Suppressed recording-gap proposals when the same interval is already
+  explained by a correlated GPS-loss episode from `NOGPS.LOG`.
+- Kept recording gaps as reviewable boundary suggestions instead of allowing
+  them to be incorrectly confirmed as measured time ranges.
 - Added schema version 3 with revision-scoped automatic segment proposals and
   stable user-owned measurement segments.
 - Added conservative proposals for prolonged stops, internal GPS-loss periods

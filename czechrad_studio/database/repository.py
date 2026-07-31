@@ -11,12 +11,13 @@ from enum import Enum
 from pathlib import Path
 from uuid import uuid4
 
-from ..core.models import MeasurementValidation, TimeQuality
+from ..core.models import LocationQuality, MeasurementValidation, TimeQuality
 from ..importer.session import ImportAnalysis
 from ..importer.validation import validate_measurement
 from ..missions.model import Mission
 from ..segments import (
     MeasurementSegment,
+    ProposalType,
     SegmentProposal,
     SegmentType,
     propose_segments,
@@ -428,35 +429,62 @@ class GeoPackageRepository:
     ) -> tuple[SegmentProposal, ...]:
         """Return proposals belonging only to the current LOG revision."""
 
-        from ..segments import ProposalType
-
         with self._connection() as connection:
             migrate(connection)
             rows = connection.execute(
                 """
-                SELECT p.* FROM segment_proposals p
+                SELECT p.*, s.original_filename, s.logical_date
+                FROM segment_proposals p
                 JOIN source_log_revisions r ON r.id = p.revision_id
+                JOIN source_logs s ON s.id = p.source_log_id
                 WHERE p.source_log_id = ? AND r.is_current = 1
                 ORDER BY p.started_at_utc, p.proposal_type
                 """,
                 (source_log_id,),
             ).fetchall()
-        return tuple(
-            SegmentProposal(
-                id=row["id"],
-                source_log_id=row["source_log_id"],
-                revision_id=row["revision_id"],
-                proposal_type=ProposalType(row["proposal_type"]),
-                start=_parse_datetime(row["started_at_utc"]),
-                end=_parse_datetime(row["ended_at_utc"]),
-                confidence=row["confidence"],
-                reason=row["reason"],
-                sample_count=row["sample_count"],
-                center_latitude=row["center_latitude"],
-                center_longitude=row["center_longitude"],
-            )
-            for row in rows
+        return tuple(self._proposal_from_row(row) for row in rows)
+
+    @staticmethod
+    def _proposal_from_row(row: sqlite3.Row) -> SegmentProposal:
+        return SegmentProposal(
+            id=row["id"],
+            source_log_id=row["source_log_id"],
+            revision_id=row["revision_id"],
+            proposal_type=ProposalType(row["proposal_type"]),
+            start=_parse_datetime(row["started_at_utc"]),
+            end=_parse_datetime(row["ended_at_utc"]),
+            confidence=row["confidence"],
+            reason=row["reason"],
+            sample_count=row["sample_count"],
+            center_latitude=row["center_latitude"],
+            center_longitude=row["center_longitude"],
+            source_name=row["original_filename"],
+            logical_date=row["logical_date"],
+            status=row["status"],
         )
+
+    def list_mission_segment_proposals(
+        self, mission_id: str, *, pending_only: bool = True
+    ) -> tuple[SegmentProposal, ...]:
+        """List proposals from current revisions attached to one mission."""
+
+        status_clause = "AND p.status = 'pending'" if pending_only else ""
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                f"""
+                SELECT p.*, s.original_filename, s.logical_date
+                FROM segment_proposals p
+                JOIN source_log_revisions r
+                    ON r.id = p.revision_id AND r.is_current = 1
+                JOIN source_logs s ON s.id = p.source_log_id
+                JOIN mission_source_logs ms ON ms.source_log_id = s.id
+                WHERE ms.mission_id = ? {status_clause}
+                ORDER BY s.logical_date, p.started_at_utc, p.proposal_type
+                """,
+                (mission_id,),
+            ).fetchall()
+        return tuple(self._proposal_from_row(row) for row in rows)
 
     def create_segment(
         self,
@@ -467,11 +495,21 @@ class GeoPackageRepository:
         mission_id: str | None = None,
         segment_type: SegmentType = SegmentType.UNCLASSIFIED,
         title: str = "",
+        status: str = "draft",
+        include_in_suro: bool = True,
+        detector_height_m: float | None = None,
+        detector_orientation: str = "",
+        route_description: str = "",
+        notes: str = "",
     ) -> MeasurementSegment:
         """Create a stable draft segment which survives later LOG revisions."""
 
         if end < start:
             raise ValueError("Konec úseku nesmí být před jeho začátkem.")
+        if detector_height_m is not None and detector_height_m < 0:
+            raise ValueError("Výška detektoru nesmí být záporná.")
+        if status not in {"draft", "confirmed", "excluded"}:
+            raise ValueError(f"Neznámý stav úseku: {status}")
         segment_id = str(uuid4())
         now = utc_now_text()
         with self._connection() as connection:
@@ -488,18 +526,156 @@ class GeoPackageRepository:
                 """
                 INSERT INTO measurement_segments
                 (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
-                 segment_type, title, created_at_utc, updated_at_utc)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 segment_type, title, status, include_in_suro,
+                 detector_height_m, detector_orientation, route_description,
+                 notes, created_at_utc, updated_at_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     segment_id, source_log_id, mission_id,
                     _utc_timestamp(start), _utc_timestamp(end),
-                    segment_type.value, title.strip(), now, now,
+                    segment_type.value, title.strip(), status,
+                    int(include_in_suro), detector_height_m,
+                    detector_orientation.strip(), route_description.strip(),
+                    notes.strip(), now, now,
                 ),
             )
         return next(
             item for item in self.list_segments(source_log_id)
             if item.id == segment_id
+        )
+
+    def confirm_segment_proposal(
+        self,
+        proposal_id: str,
+        mission_id: str,
+        *,
+        segment_type: SegmentType,
+        title: str = "",
+        include_in_suro: bool = True,
+        detector_height_m: float | None = None,
+        detector_orientation: str = "",
+        route_description: str = "",
+        notes: str = "",
+    ) -> MeasurementSegment:
+        """Atomically accept a current proposal and create a confirmed segment."""
+
+        if detector_height_m is not None and detector_height_m < 0:
+            raise ValueError("Výška detektoru nesmí být záporná.")
+        segment_id = str(uuid4())
+        now = utc_now_text()
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                """
+                SELECT p.* FROM segment_proposals p
+                JOIN source_log_revisions r
+                    ON r.id = p.revision_id AND r.is_current = 1
+                JOIN mission_source_logs ms
+                    ON ms.source_log_id = p.source_log_id
+                   AND ms.mission_id = ?
+                WHERE p.id = ? AND p.status = 'pending'
+                """,
+                (mission_id, proposal_id),
+            ).fetchone()
+            if row is None:
+                raise KeyError(
+                    "Návrh nebyl nalezen, už byl zpracován nebo nepatří "
+                    "do aktivní mise."
+                )
+            if row["proposal_type"] == ProposalType.RECORDING_GAP.value:
+                raise ValueError(
+                    "Mezera v záznamu je pouze návrh hranice, ne měřicí úsek."
+                )
+            connection.execute(
+                """
+                INSERT INTO measurement_segments
+                (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
+                 segment_type, title, status, include_in_suro,
+                 detector_height_m, detector_orientation, route_description,
+                 notes, created_at_utc, updated_at_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    segment_id, row["source_log_id"], mission_id,
+                    row["started_at_utc"], row["ended_at_utc"],
+                    segment_type.value, title.strip(), int(include_in_suro),
+                    detector_height_m, detector_orientation.strip(),
+                    route_description.strip(), notes.strip(), now, now,
+                ),
+            )
+            connection.execute(
+                """
+                UPDATE segment_proposals
+                SET status = 'accepted', resolved_segment_id = ?,
+                    resolved_at_utc = ?
+                WHERE id = ?
+                """,
+                (segment_id, now, proposal_id),
+            )
+        return next(
+            segment
+            for segment in self.list_segments(row["source_log_id"])
+            if segment.id == segment_id
+        )
+
+    def dismiss_segment_proposal(self, proposal_id: str) -> None:
+        """Mark one pending proposal as intentionally skipped."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            cursor = connection.execute(
+                """
+                UPDATE segment_proposals
+                SET status = 'dismissed', resolved_at_utc = ?
+                WHERE id = ? AND status = 'pending'
+                """,
+                (utc_now_text(), proposal_id),
+            )
+            if cursor.rowcount != 1:
+                raise KeyError("Návrh nebyl nalezen nebo už byl zpracován.")
+
+    def list_proposal_positions(
+        self, proposal_id: str
+    ) -> tuple[tuple[float, float], ...]:
+        """Return trusted current-revision map positions inside a proposal.
+
+        Coordinates are returned as ``(longitude, latitude)`` so the QGIS
+        presentation layer can create WGS 84 geometries without depending on
+        database implementation details.
+        """
+
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                """
+                SELECT p.revision_id, p.started_at_utc, p.ended_at_utc
+                FROM segment_proposals p
+                JOIN source_log_revisions r
+                    ON r.id = p.revision_id AND r.is_current = 1
+                WHERE p.id = ?
+                """,
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError("Návrh nebyl nalezen v aktuální revizi LOGu.")
+            positions = connection.execute(
+                """
+                SELECT longitude, latitude FROM measurements
+                WHERE revision_id = ?
+                  AND measured_at_utc BETWEEN ? AND ?
+                  AND latitude IS NOT NULL AND longitude IS NOT NULL
+                  AND location_quality = ?
+                ORDER BY measured_at_utc, sequence_no
+                """,
+                (
+                    row["revision_id"], row["started_at_utc"],
+                    row["ended_at_utc"], LocationQuality.VALID.value,
+                ),
+            ).fetchall()
+        return tuple(
+            (position["longitude"], position["latitude"])
+            for position in positions
         )
 
     def list_segments(self, source_log_id: str) -> tuple[MeasurementSegment, ...]:
