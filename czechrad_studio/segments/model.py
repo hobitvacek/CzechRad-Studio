@@ -60,3 +60,5 @@ class MeasurementSegment:
     detector_orientation: str
     route_description: str
     notes: str
+    source_name: str | None = None
+    logical_date: str | None = None

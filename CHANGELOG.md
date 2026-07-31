@@ -4,6 +4,10 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Added an active-mission overview of saved measurement segments with metadata
+  editing and map focus based on the current LOG revision.
+- Preserved the original GPS-loss entry anchor for locating indoor segments
+  which contain no usable coordinates.
 - Added a temporary high-contrast QGIS map layer for locating a selected
   segment proposal without modifying the source LOG or stored measurements.
 - Fixed proposal highlighting not appearing while the segment editor blocked

@@ -67,6 +67,7 @@ class PluginContractTest(unittest.TestCase):
             "ui/monitor_dialog.py",
             "ui/project_dialog.py",
             "ui/segments_dialog.py",
+            "ui/saved_segments_dialog.py",
             "monitoring/files.py",
             "database/schema.py",
             "database/repository.py",
@@ -117,6 +118,18 @@ class PluginContractTest(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("self.setModal(False)", dialog_source)
+
+    def test_saved_segments_can_be_edited_and_focused(self):
+        source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
+        dialog_source = (PLUGIN / "ui/saved_segments_dialog.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("SavedSegmentsDialog", source)
+        self.assertIn("Uložené úseky…", source)
+        self.assertIn("list_segment_positions", source)
+        self.assertIn("update_segment", dialog_source)
+        self.assertIn("segment_focus_requested", dialog_source)
 
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
