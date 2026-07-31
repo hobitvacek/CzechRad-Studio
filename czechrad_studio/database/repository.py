@@ -371,4 +371,475 @@ class GeoPackageRepository:
     @staticmethod
     def _attach_mission(
         connection: sqlite3.Connection,
-        mission_id: str×û¶‰žËkºwµç@€€€€€€)=%8µ¥ÍÍ¥½¹}Í½ÕÉ•}±½ÌµÌ=8µÌ¹Í½ÕÉ•}±½}¥€ôÌ¹¥(€€€€€€€€€€€€€€€]!IµÌ¹µ¥ÍÍ¥½¹}¥€ô€üíÍÑ…ÑÕÍ}±…ÕÍ•ô(€€€€€€€€€€€€€€€=IH	dÌ¹±½¥…±}‘…Ñ”°À¹ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ°À¹ÁÉ½Á½Í…±}ÑåÁ”(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡µ¥ÍÍ¥½¹}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡…±° ¤(€€€€€€€É•ÑÕÉ¸ÑÕÁ±”¡Í•±˜¹}ÁÉ½Á½Í…±}™É½µ}É½Ü¡É½Ü¤™½ÈÉ½Ü¥¸É½ÝÌ¤((€€€‘•˜É•…Ñ•}Í•µ•¹Ð (€€€€€€€Í•±˜°(€€€€€€€Í½ÕÉ•}±½}¥èÍÑÈ°(€€€€€€€ÍÑ…ÉÐè‘…Ñ•Ñ¥µ”°(€€€€€€€•¹è‘…Ñ•Ñ¥µ”°(€€€€€€€€¨°(€€€€€€€µ¥ÍÍ¥½¹}¥èÍÑÈð9½¹”€ô9½¹”°(€€€€€€€Í•µ•¹Ñ}ÑåÁ”èM•µ•¹ÑQåÁ”€ôM•µ•¹ÑQåÁ”¹U91MM%%°(€€€€€€€Ñ¥Ñ±”èÍÑÈ€ô€ˆˆ°(€€€€€€€ÍÑ…ÑÕÌèÍÑÈ€ô€‰‘É…™Ðˆ°(€€€€€€€¥¹±Õ‘•}¥¹}ÍÕÉ¼è‰½½°€ôQÉÕ”°(€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´è™±½…Ðð9½¹”€ô9½¹”°(€€€€€€€‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸èÍÑÈ€ô€ˆˆ°(€€€€€€€É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸èÍÑÈ€ô€ˆˆ°(€€€€€€€¹½Ñ•ÌèÍÑÈ€ô€ˆˆ°(€€€€¤€´ø5•…ÍÕÉ•µ•¹ÑM•µ•¹Ðè(€€€€€€€€ˆˆ‰É•…Ñ”„ÍÑ…‰±”‘É…™ÐÍ•µ•¹ÐÝ¡¥ ÍÕÉÙ¥Ù•Ì±…Ñ•È1=É•Ù¥Í¥½¹Ì¸ˆˆˆ((€€€€€€€¥˜•¹€ðÍÑ…ÉÐè(€€€€€€€€€€€É…¥Í”Y…±Õ•ÉÉ½È ‰-½¹•ŒƒéÍ•­Ô¹•Í·´‹õÐÃe•©•¡¼é‡7…Ñ­•´¸ˆ¤(€€€€€€€¥˜‘•Ñ•Ñ½É}¡•¥¡Ñ}´¥Ì¹½Ð9½¹”…¹‘•Ñ•Ñ½É}¡•¥¡Ñ}´€ð€Àè(€€€€€€€€€€€É…¥Í”Y…±Õ•ÉÉ½È ‰[÷…­„‘•Ñ•­Ñ½ÉÔ¹•Í·´‹õÐë…Á½É»„¸ˆ¤(€€€€€€€¥˜ÍÑ…ÑÕÌ¹½Ð¥¸ì‰‘É…™Ðˆ°€‰½¹™¥Éµ•ˆ°€‰•á±Õ‘•‰ôè(€€€€€€€€€€€É…¥Í”Y…±Õ•ÉÉ½È¡˜‰9•é»…·ôÍÑ…ØƒéÍ•­ÔèíÍÑ…ÑÕÍôˆ¤(€€€€€€€Í•µ•¹Ñ}¥€ôÍÑÈ¡ÕÕ¥Ð ¤¤(€€€€€€€¹½Ü€ôÕÑ}¹½Ý}Ñ•áÐ ¤(€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€¥˜½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€‰M1P€ÄI=4Í½ÕÉ•}±½Ì]!I¥€ô€üˆ°€¡Í½ÕÉ•}±½}¥°¤(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¤¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”-•åÉÉ½È¡˜‰i‘É½©½Ûô1=íÍ½ÕÉ•}±½}¥‘ô¹•‰å°¹…±•é•¸¸ˆ¤(€€€€€€€€€€€¥˜µ¥ÍÍ¥½¹}¥¥Ì¹½Ð9½¹”…¹½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€‰M1P€ÄI=4µ¥ÍÍ¥½¹Ì]!I¥€ô€üˆ°€¡µ¥ÍÍ¥½¹}¥°¤(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¤¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”-•åÉÉ½È¡˜‰5¥Í”íµ¥ÍÍ¥½¹}¥‘ô¹•‰å±„¹…±•é•¹„¸ˆ¤(€€€€€€€€€€€½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€%9MIP%9Q<µ•…ÍÕÉ•µ•¹Ñ}Í•µ•¹ÑÌ(€€€€€€€€€€€€€€€€¡¥°Í½ÕÉ•}±½}¥°µ¥ÍÍ¥½¹}¥°ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ°•¹‘•‘}…Ñ}ÕÑŒ°(€€€€€€€€€€€€€€€€Í•µ•¹Ñ}ÑåÁ”°Ñ¥Ñ±”°ÍÑ…ÑÕÌ°¥¹±Õ‘•}¥¹}ÍÕÉ¼°(€€€€€€€€€€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´°‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸°É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸°(€€€€€€€€€€€€€€€€¹½Ñ•Ì°É•…Ñ•‘}…Ñ}ÕÑŒ°ÕÁ‘…Ñ•‘}…Ñ}ÕÑŒ¤(€€€€€€€€€€€€€€€Y1UL€ ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü°€ü¤(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€€€€Í•µ•¹Ñ}¥°Í½ÕÉ•}±½}¥°µ¥ÍÍ¥½¹}¥°(€€€€€€€€€€€€€€€€€€€}ÕÑ}Ñ¥µ•ÍÑ…µÀ¡ÍÑ…ÉÐ¤°}ÕÑ}Ñ¥µ•ÍÑ…µÀ¡•¹¤°(€€€€€€€€€€€€€€€€€€€Í•µ•¹Ñ}ÑåÁ”¹Ù…±Õ”°Ñ¥Ñ±”¹ÍÑÉ¥À ¤°ÍÑ…ÑÕÌ°(€€€€€€€€€€€€€€€€€€€¥¹Ð¡¥¹±Õ‘•}¥¹}ÍÕÉ¼¤°‘•Ñ•Ñ½É}¡•¥¡Ñ}´°(€€€€€€€€€€€€€€€€€€€‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸¹ÍÑÉ¥À ¤°É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸¹ÍÑÉ¥À ¤°(€€€€€€€€€€€€€€€€€€€¹½Ñ•Ì¹ÍÑÉ¥À ¤°¹½Ü°¹½Ü°(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€¤(€€€€€€€É•ÑÕÉ¸¹•áÐ (€€€€€€€€€€€¥Ñ•´™½È¥Ñ•´¥¸Í•±˜¹±¥ÍÑ}Í•µ•¹ÑÌ¡Í½ÕÉ•}±½}¥¤(€€€€€€€€€€€¥˜¥Ñ•´¹¥€ôôÍ•µ•¹Ñ}¥(€€€€€€€€¤((€€€‘•˜½¹™¥Éµ}Í•µ•¹Ñ}ÁÉ½Á½Í…° (€€€€€€€Í•±˜°(€€€€€€€ÁÉ½Á½Í…±}¥èÍÑÈ°(€€€€€€€µ¥ÍÍ¥½¹}¥èÍÑÈ°(€€€€€€€€¨°(€€€€€€€Í•µ•¹Ñ}ÑåÁ”èM•µ•¹ÑQåÁ”°(€€€€€€€Ñ¥Ñ±”èÍÑÈ€ô€ˆˆ°(€€€€€€€¥¹±Õ‘•}¥¹}ÍÕÉ¼è‰½½°€ôQÉÕ”°(€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´è™±½…Ðð9½¹”€ô9½¹”°(€€€€€€€‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸èÍÑÈ€ô€ˆˆ°(€€€€€€€É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸èÍÑÈ€ô€ˆˆ°(€€€€€€€¹½Ñ•ÌèÍÑÈ€ô€ˆˆ°(€€€€¤€´ø5•…ÍÕÉ•µ•¹ÑM•µ•¹Ðè(€€€€€€€€ˆˆ‰Ñ½µ¥…±±ä…•ÁÐ„ÕÉÉ•¹ÐÁÉ½Á½Í…°…¹É•…Ñ”„½¹™¥Éµ•Í•µ•¹Ð¸ˆˆˆ((€€€€€€€¥˜‘•Ñ•Ñ½É}¡•¥¡Ñ}´¥Ì¹½Ð9½¹”…¹‘•Ñ•Ñ½É}¡•¥¡Ñ}´€ð€Àè(€€€€€€€€€€€É…¥Í”Y…±Õ•ÉÉ½È ‰[÷…­„‘•Ñ•­Ñ½ÉÔ¹•Í·´‹õÐë…Á½É»„¸ˆ¤(€€€€€€€Í•µ•¹Ñ}¥€ôÍÑÈ¡ÕÕ¥Ð ¤¤(€€€€€€€¹½Ü€ôÕÑ}¹½Ý}Ñ•áÐ ¤(€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É½Ü€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1PÀ¸¨I=4Í•µ•¹Ñ}ÁÉ½Á½Í…±ÌÀ(€€€€€€€€€€€€€€€)=%8Í½ÕÉ•}±½}É•Ù¥Í¥½¹ÌÈ(€€€€€€€€€€€€€€€€€€€=8È¹¥€ôÀ¹É•Ù¥Í¥½¹}¥9È¹¥Í}ÕÉÉ•¹Ð€ô€Ä(€€€€€€€€€€€€€€€)=%8µ¥ÍÍ¥½¹}Í½ÕÉ•}±½ÌµÌ(€€€€€€€€€€€€€€€€€€€=8µÌ¹Í½ÕÉ•}±½}¥€ôÀ¹Í½ÕÉ•}±½}¥(€€€€€€€€€€€€€€€€€€9µÌ¹µ¥ÍÍ¥½¹}¥€ô€ü(€€€€€€€€€€€€€€€]!IÀ¹¥€ô€ü9À¹ÍÑ…ÑÕÌ€ô€Á•¹‘¥¹œœ(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡µ¥ÍÍ¥½¹}¥°ÁÉ½Á½Í…±}¥¤°(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¤(€€€€€€€€€€€¥˜É½Ü¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”-•åÉÉ½È (€€€€€€€€€€€€€€€€€€€€‰;…ÙÉ ¹•‰å°¹…±•é•¸°×ø‰å°éÁÉ…½Û…¸¹•‰¼¹•Á…Óg´€ˆ(€€€€€€€€€€€€€€€€€€€€‰‘¼…­Ñ¥Ù»´µ¥Í”¸ˆ(€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€¥˜É½Ýl‰ÁÉ½Á½Í…±}ÑåÁ”‰t€ôôAÉ½Á½Í…±QåÁ”¹I=I%9}@¹Ù…±Õ”è(€€€€€€€€€€€€€€€É…¥Í”Y…±Õ•ÉÉ½È (€€€€€€€€€€€€€€€€€€€€‰5•é•É„Øë…é¹…µÔ©”Á½Õé”»…ÙÉ ¡É…¹¥”°¹”·oe¥´ƒéÍ•¬¸ˆ(€€€€€€€€€€€€€€€€¤(€€€€€€€€€€€½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€%9MIP%9Q<µ•…ÍÕÉ•µ•¹Ñ}Í•µ•¹ÑÌ(€€€€€€€€€€€€€€€€¡¥°Í½ÕÉ•}±½}¥°µ¥ÍÍ¥½¹}¥°ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ°•¹‘•‘}…Ñ}ÕÑŒ°(€€€€€€€€€€€€€€€€Í•µ•¹Ñ}ÑåÁ”°Ñ¥Ñ±”°ÍÑ…ÑÕÌ°¥¹±Õ‘•}¥¹}ÍÕÉ¼°(€€€€€€€€€€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´°‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸°É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸°(€€€€€€€€€€€€€€€€¹½Ñ•Ì°É•…Ñ•‘}…Ñ}ÕÑŒ°ÕÁ‘…Ñ•‘}…Ñ}ÕÑŒ¤(€€€€€€€€€€€€€€€Y1UL€ ü°€ü°€ü°€ü°€ü°€ü°€ü°€½¹™¥Éµ•œ°€ü°€ü°€ü°€ü°€ü°€ü°€ü¤(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€€€€Í•µ•¹Ñ}¥°É½Ýl‰Í½ÕÉ•}±½}¥‰t°µ¥ÍÍ¥½¹}¥°(€€€€€€€€€€€€€€€€€€€É½Ýl‰ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ‰t°É½Ýl‰•¹‘•‘}…Ñ}ÕÑŒ‰t°(€€€€€€€€€€€€€€€€€€€Í•µ•¹Ñ}ÑåÁ”¹Ù…±Õ”°Ñ¥Ñ±”¹ÍÑÉ¥À ¤°¥¹Ð¡¥¹±Õ‘•}¥¹}ÍÕÉ¼¤°(€€€€€€€€€€€€€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´°‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸¹ÍÑÉ¥À ¤°(€€€€€€€€€€€€€€€€€€€É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸¹ÍÑÉ¥À ¤°¹½Ñ•Ì¹ÍÑÉ¥À ¤°¹½Ü°¹½Ü°(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€¤(€€€€€€€€€€€½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€UAQÍ•µ•¹Ñ}ÁÉ½Á½Í…±Ì(€€€€€€€€€€€€€€€MPÍÑ…ÑÕÌ€ô€…•ÁÑ•œ°É•Í½±Ù•‘}Í•µ•¹Ñ}¥€ô€ü°(€€€€€€€€€€€€€€€€€€€É•Í½±Ù•‘}…Ñ}ÕÑŒ€ô€ü(€€€€€€€€€€€€€€€]!I¥€ô€ü(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡Í•µ•¹Ñ}¥°¹½Ü°ÁÉ½Á½Í…±}¥¤°(€€€€€€€€€€€€¤(€€€€€€€É•ÑÕÉ¸¹•áÐ (€€€€€€€€€€€Í•µ•¹Ð(€€€€€€€€€€€™½ÈÍ•µ•¹Ð¥¸Í•±˜¹±¥ÍÑ}Í•µ•¹ÑÌ¡É½Ýl‰Í½ÕÉ•}±½}¥‰t¤(€€€€€€€€€€€¥˜Í•µ•¹Ð¹¥€ôôÍ•µ•¹Ñ}¥(€€€€€€€€¤((€€€‘•˜‘¥Íµ¥ÍÍ}Í•µ•¹Ñ}ÁÉ½Á½Í…°¡Í•±˜°ÁÉ½Á½Í…±}¥èÍÑÈ¤€´ø9½¹”è(€€€€€€€€ˆˆ‰5…É¬½¹”Á•¹‘¥¹œÁÉ½Á½Í…°…Ì¥¹Ñ•¹Ñ¥½¹…±±äÍ­¥ÁÁ•¸ˆˆˆ((€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€ÕÉÍ½È€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€UAQÍ•µ•¹Ñ}ÁÉ½Á½Í…±Ì(€€€€€€€€€€€€€€€MPÍÑ…ÑÕÌ€ô€‘¥Íµ¥ÍÍ•œ°É•Í½±Ù•‘}…Ñ}ÕÑŒ€ô€ü(€€€€€€€€€€€€€€€]!I¥€ô€ü9ÍÑ…ÑÕÌ€ô€Á•¹‘¥¹œœ(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡ÕÑ}¹½Ý}Ñ•áÐ ¤°ÁÉ½Á½Í…±}¥¤°(€€€€€€€€€€€€¤(€€€€€€€€€€€¥˜ÕÉÍ½È¹É½Ý½Õ¹Ð€„ô€Äè(€€€€€€€€€€€€€€€É…¥Í”-•åÉÉ½È ‰;…ÙÉ ¹•‰å°¹…±•é•¸¹•‰¼×ø‰å°éÁÉ…½Û…¸¸ˆ¤((€€€‘•˜±¥ÍÑ}ÁÉ½Á½Í…±}Á½Í¥Ñ¥½¹Ì (€€€€€€€Í•±˜°ÁÉ½Á½Í…±}¥èÍÑÈ(€€€€¤€´øÑÕÁ±•mÑÕÁ±•m™±½…Ð°™±½…Ñt°€¸¸¹tè(€€€€€€€€ˆˆ‰I•ÑÕÉ¸ÑÉÕÍÑ•ÕÉÉ•¹ÐµÉ•Ù¥Í¥½¸µ…ÀÁ½Í¥Ñ¥½¹Ì¥¹Í¥‘”„ÁÉ½Á½Í…°¸((€€€€€€€½½É‘¥¹…Ñ•Ì…É”É•ÑÕÉ¹•…Ì€¡±½¹¥ÑÕ‘”°±…Ñ¥ÑÕ‘”¥€Í¼Ñ¡”E%L(€€€€€€€ÁÉ•Í•¹Ñ…Ñ¥½¸±…å•È…¸É•…Ñ”]L€àÐ•½µ•ÑÉ¥•ÌÝ¥Ñ¡½ÕÐ‘•Á•¹‘¥¹œ½¸(€€€€€€€‘…Ñ…‰…Í”¥µÁ±•µ•¹Ñ…Ñ¥½¸‘•Ñ…¥±Ì¸(€€€€€€€€ˆˆˆ((€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É½Ü€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1PÀ¹É•Ù¥Í¥½¹}¥°À¹ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ°À¹•¹‘•‘}…Ñ}ÕÑŒ(€€€€€€€€€€€€€€€I=4Í•µ•¹Ñ}ÁÉ½Á½Í…±ÌÀ(€€€€€€€€€€€€€€€)=%8Í½ÕÉ•}±½}É•Ù¥Í¥½¹ÌÈ(€€€€€€€€€€€€€€€€€€€=8È¹¥€ôÀ¹É•Ù¥Í¥½¹}¥9È¹¥Í}ÕÉÉ•¹Ð€ô€Ä(€€€€€€€€€€€€€€€]!IÀ¹¥€ô€ü(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡ÁÉ½Á½Í…±}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¤(€€€€€€€€€€€¥˜É½Ü¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”-•åÉÉ½È ‰;…ÙÉ ¹•‰å°¹…±•é•¸Ø…­Ñ×…±»´É•Ù¥é¤1=Ô¸ˆ¤(€€€€€€€€€€€Á½Í¥Ñ¥½¹Ì€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1P±½¹¥ÑÕ‘”°±…Ñ¥ÑÕ‘”I=4µ•…ÍÕÉ•µ•¹ÑÌ(€€€€€€€€€€€€€€€]!IÉ•Ù¥Í¥½¹}¥€ô€ü(€€€€€€€€€€€€€€€€€9µ•…ÍÕÉ•‘}…Ñ}ÕÑŒ	Q]8€ü9€ü(€€€€€€€€€€€€€€€€€9±…Ñ¥ÑÕ‘”%L9=P9U109±½¹¥ÑÕ‘”%L9=P9U10(€€€€€€€€€€€€€€€€€9±½…Ñ¥½¹}ÅÕ…±¥Ñä€ô€ü(€€€€€€€€€€€€€€€=IH	dµ•…ÍÕÉ•‘}…Ñ}ÕÑŒ°Í•ÅÕ•¹•}¹¼(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€€€€É½Ýl‰É•Ù¥Í¥½¹}¥‰t°É½Ýl‰ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ‰t°(€€€€€€€€€€€€€€€€€€€É½Ýl‰•¹‘•‘}…Ñ}ÕÑŒ‰t°1½…Ñ¥½¹EÕ…±¥Ñä¹Y1%¹Ù…±Õ”°(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€¤¹™•Ñ¡…±° ¤(€€€€€€€É•ÑÕÉ¸ÑÕÁ±” (€€€€€€€€€€€€¡Á½Í¥Ñ¥½¹l‰±½¹¥ÑÕ‘”‰t°Á½Í¥Ñ¥½¹l‰±…Ñ¥ÑÕ‘”‰t¤(€€€€€€€€€€€™½ÈÁ½Í¥Ñ¥½¸¥¸Á½Í¥Ñ¥½¹Ì(€€€€€€€€¤((€€€‘•˜±¥ÍÑ}Í•µ•¹ÑÌ¡Í•±˜°Í½ÕÉ•}±½}¥èÍÑÈ¤€´øÑÕÁ±•m5•…ÍÕÉ•µ•¹ÑM•µ•¹Ð°€¸¸¹tè(€€€€€€€€ˆˆ‰1¥ÍÐÍÑ…‰±”ÕÍ•ÈÍ•µ•¹ÑÌ¥¹‘•Á•¹‘•¹Ñ±ä™É½´…ÕÑ½µ…Ñ¥ŒÁÉ½Á½Í…±Ì¸ˆˆˆ((€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É½ÝÌ€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1PµÌ¸¨°Ì¹½É¥¥¹…±}™¥±•¹…µ”°Ì¹±½¥…±}‘…Ñ”(€€€€€€€€€€€€€€€I=4µ•…ÍÕÉ•µ•¹Ñ}Í•µ•¹ÑÌµÌ(€€€€€€€€€€€€€€€)=%8Í½ÕÉ•}±½ÌÌ=8Ì¹¥€ôµÌ¹Í½ÕÉ•}±½}¥(€€€€€€€€€€€€€€€]!IµÌ¹Í½ÕÉ•}±½}¥€ô€ü(€€€€€€€€€€€€€€€=IH	dÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ°•¹‘•‘}…Ñ}ÕÑŒ°¥(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡Í½ÕÉ•}±½}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡…±° ¤(€€€€€€€É•ÑÕÉ¸ÑÕÁ±”¡Í•±˜¹}Í•µ•¹Ñ}™É½µ}É½Ü¡É½Ü¤™½ÈÉ½Ü¥¸É½ÝÌ¤((€€€ÍÑ…Ñ¥µ•Ñ¡½(€€€‘•˜}Í•µ•¹Ñ}™É½µ}É½Ü¡É½ÜèÍÅ±¥Ñ”Ì¹I½Ü¤€´ø5•…ÍÕÉ•µ•¹ÑM•µ•¹Ðè(€€€€€€€É•ÑÕÉ¸5•…ÍÕÉ•µ•¹ÑM•µ•¹Ð (€€€€€€€€€€€¥õÉ½Ýl‰¥‰t°Í½ÕÉ•}±½}¥õÉ½Ýl‰Í½ÕÉ•}±½}¥‰t°(€€€€€€€€€€€µ¥ÍÍ¥½¹}¥õÉ½Ýl‰µ¥ÍÍ¥½¹}¥‰t°(€€€€€€€€€€€ÍÑ…ÉÐõ}Á…ÉÍ•}‘…Ñ•Ñ¥µ”¡É½Ýl‰ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ‰t¤°(€€€€€€€€€€€•¹õ}Á…ÉÍ•}‘…Ñ•Ñ¥µ”¡É½Ýl‰•¹‘•‘}…Ñ}ÕÑŒ‰t¤°(€€€€€€€€€€€Í•µ•¹Ñ}ÑåÁ”õM•µ•¹ÑQåÁ”¡É½Ýl‰Í•µ•¹Ñ}ÑåÁ”‰t¤°(€€€€€€€€€€€Ñ¥Ñ±”õÉ½Ýl‰Ñ¥Ñ±”‰t°ÍÑ…ÑÕÌõÉ½Ýl‰ÍÑ…ÑÕÌ‰t°(€€€€€€€€€€€¥¹±Õ‘•}¥¹}ÍÕÉ¼õ‰½½°¡É½Ýl‰¥¹±Õ‘•}¥¹}ÍÕÉ¼‰t¤°(€€€€€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´õÉ½Ýl‰‘•Ñ•Ñ½É}¡•¥¡Ñ}´‰t°(€€€€€€€€€€€‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸õÉ½Ýl‰‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸‰t°(€€€€€€€€€€€É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸õÉ½Ýl‰É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸‰t°¹½Ñ•ÌõÉ½Ýl‰¹½Ñ•Ì‰t°(€€€€€€€€€€€Í½ÕÉ•}¹…µ”õÉ½Ýl‰½É¥¥¹…±}™¥±•¹…µ”‰t°(€€€€€€€€€€€±½¥…±}‘…Ñ”õÉ½Ýl‰±½¥…±}‘…Ñ”‰t°(€€€€€€€€¤((€€€‘•˜±¥ÍÑ}µ¥ÍÍ¥½¹}Í•µ•¹ÑÌ (€€€€€€€Í•±˜°µ¥ÍÍ¥½¹}¥èÍÑÈ(€€€€¤€´øÑÕÁ±•m5•…ÍÕÉ•µ•¹ÑM•µ•¹Ð°€¸¸¹tè(€€€€€€€€ˆˆ‰1¥ÍÐÍÑ…‰±”½¹™¥Éµ•½È‘É…™ÐÍ•µ•¹ÑÌ¥¸½¹”µ¥ÍÍ¥½¸¸ˆˆˆ((€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É½ÝÌ€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1PµÌ¸¨°Ì¹½É¥¥¹…±}™¥±•¹…µ”°Ì¹±½¥…±}‘…Ñ”(€€€€€€€€€€€€€€€I=4µ•…ÍÕÉ•µ•¹Ñ}Í•µ•¹ÑÌµÌ(€€€€€€€€€€€€€€€)=%8Í½ÕÉ•}±½ÌÌ=8Ì¹¥€ôµÌ¹Í½ÕÉ•}±½}¥(€€€€€€€€€€€€€€€]!IµÌ¹µ¥ÍÍ¥½¹}¥€ô€ü(€€€€€€€€€€€€€€€=IH	dÌ¹±½¥…±}‘…Ñ”°µÌ¹ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ°µÌ¹•¹‘•‘}…Ñ}ÕÑŒ°µÌ¹¥(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡µ¥ÍÍ¥½¹}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡…±° ¤(€€€€€€€É•ÑÕÉ¸ÑÕÁ±”¡Í•±˜¹}Í•µ•¹Ñ}™É½µ}É½Ü¡É½Ü¤™½ÈÉ½Ü¥¸É½ÝÌ¤((€€€‘•˜ÕÁ‘…Ñ•}Í•µ•¹Ð (€€€€€€€Í•±˜°(€€€€€€€Í•µ•¹Ñ}¥èÍÑÈ°(€€€€€€€€¨°(€€€€€€€Í•µ•¹Ñ}ÑåÁ”èM•µ•¹ÑQåÁ”°(€€€€€€€Ñ¥Ñ±”èÍÑÈ€ô€ˆˆ°(€€€€€€€¥¹±Õ‘•}¥¹}ÍÕÉ¼è‰½½°€ôQÉÕ”°(€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´è™±½…Ðð9½¹”€ô9½¹”°(€€€€€€€‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸èÍÑÈ€ô€ˆˆ°(€€€€€€€É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸èÍÑÈ€ô€ˆˆ°(€€€€€€€¹½Ñ•ÌèÍÑÈ€ô€ˆˆ°(€€€€¤€´ø5•…ÍÕÉ•µ•¹ÑM•µ•¹Ðè(€€€€€€€€ˆˆ‰UÁ‘…Ñ”ÕÍ•Èµ½Ý¹•µ•Ñ…‘…Ñ„Ý¥Ñ¡½ÕÐ¡…¹¥¹œÍ•µ•¹Ð‰½Õ¹‘…É¥•Ì¸ˆˆˆ((€€€€€€€¥˜‘•Ñ•Ñ½É}¡•¥¡Ñ}´¥Ì¹½Ð9½¹”…¹‘•Ñ•Ñ½É}¡•¥¡Ñ}´€ð€Àè(€€€€€€€€€€€É…¥Í”Y…±Õ•ÉÉ½È ‰[÷…­„‘•Ñ•­Ñ½ÉÔ¹•Í·´‹õÐë…Á½É»„¸ˆ¤(€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É½Ü€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€‰M1PÍ½ÕÉ•}±½}¥I=4µ•…ÍÕÉ•µ•¹Ñ}Í•µ•¹ÑÌ]!I¥€ô€üˆ°(€€€€€€€€€€€€€€€€¡Í•µ•¹Ñ}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¤(€€€€€€€€€€€¥˜É½Ü¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”-•åÉÉ½È ‹iÍ•¬¹•‰å°¹…±•é•¸¸ˆ¤(€€€€€€€€€€€½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€UAQµ•…ÍÕÉ•µ•¹Ñ}Í•µ•¹ÑÌ(€€€€€€€€€€€€€€€MPÍ•µ•¹Ñ}ÑåÁ”€ô€ü°Ñ¥Ñ±”€ô€ü°¥¹±Õ‘•}¥¹}ÍÕÉ¼€ô€ü°(€€€€€€€€€€€€€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´€ô€ü°‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸€ô€ü°(€€€€€€€€€€€€€€€€€€€É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸€ô€ü°¹½Ñ•Ì€ô€ü°ÕÁ‘…Ñ•‘}…Ñ}ÕÑŒ€ô€ü(€€€€€€€€€€€€€€€]!I¥€ô€ü(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€€€€Í•µ•¹Ñ}ÑåÁ”¹Ù…±Õ”°Ñ¥Ñ±”¹ÍÑÉ¥À ¤°¥¹Ð¡¥¹±Õ‘•}¥¹}ÍÕÉ¼¤°(€€€€€€€€€€€€€€€€€€€‘•Ñ•Ñ½É}¡•¥¡Ñ}´°‘•Ñ•Ñ½É}½É¥•¹Ñ…Ñ¥½¸¹ÍÑÉ¥À ¤°(€€€€€€€€€€€€€€€€€€€É½ÕÑ•}‘•ÍÉ¥ÁÑ¥½¸¹ÍÑÉ¥À ¤°¹½Ñ•Ì¹ÍÑÉ¥À ¤°ÕÑ}¹½Ý}Ñ•áÐ ¤°(€€€€€€€€€€€€€€€€€€€Í•µ•¹Ñ}¥°(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€¤(€€€€€€€É•ÑÕÉ¸¹•áÐ (€€€€€€€€€€€¥Ñ•´™½È¥Ñ•´¥¸Í•±˜¹±¥ÍÑ}Í•µ•¹ÑÌ¡É½Ýl‰Í½ÕÉ•}±½}¥‰t¤(€€€€€€€€€€€¥˜¥Ñ•´¹¥€ôôÍ•µ•¹Ñ}¥(€€€€€€€€¤((€€€‘•˜±¥ÍÑ}Í•µ•¹Ñ}Á½Í¥Ñ¥½¹Ì (€€€€€€€Í•±˜°Í•µ•¹Ñ}¥èÍÑÈ(€€€€¤€´øÑÕÁ±•mÑÕÁ±•m™±½…Ð°™±½…Ñt°€¸¸¹tè(€€€€€€€€ˆˆ‰I•ÑÕÉ¸ÕÉÉ•¹Ðµ…ÀÁ½Í¥Ñ¥½¹Ì™½È½¹”ÍÑ…‰±”Í•µ•¹Ð¸((€€€€€€€%˜„ALµ±½ÍÌÍ•µ•¹Ð¡…Ì¹¼ÕÍ…‰±”•½µ•ÑÉä°¥ÑÌ½É¥¥¹…°ÁÉ½Á½Í…°(€€€€€€€…¹¡½È¥ÌÉ•ÑÕÉ¹•Í¼Ñ¡”ÕÍ•È…¸ÍÑ¥±°±½…Ñ”Ñ¡”±¥­•±ä•¹ÑÉ…¹”¸(€€€€€€€€ˆˆˆ((€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É½Ü€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1PµÌ¹Í½ÕÉ•}±½}¥°µÌ¹ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ°µÌ¹•¹‘•‘}…Ñ}ÕÑŒ°(€€€€€€€€€€€€€€€€€€€€€€À¹•¹Ñ•É}±½¹¥ÑÕ‘”°À¹•¹Ñ•É}±…Ñ¥ÑÕ‘”(€€€€€€€€€€€€€€€I=4µ•…ÍÕÉ•µ•¹Ñ}Í•µ•¹ÑÌµÌ(€€€€€€€€€€€€€€€1P)=%8Í•µ•¹Ñ}ÁÉ½Á½Í…±ÌÀ(€€€€€€€€€€€€€€€€€€€=8À¹É•Í½±Ù•‘}Í•µ•¹Ñ}¥€ôµÌ¹¥(€€€€€€€€€€€€€€€]!IµÌ¹¥€ô€ü(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡Í•µ•¹Ñ}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¤(€€€€€€€€€€€¥˜É½Ü¥Ì9½¹”è(€€€€€€€€€€€€€€€É…¥Í”-•åÉÉ½È ‹iÍ•¬¹•‰å°¹…±•é•¸¸ˆ¤(€€€€€€€€€€€Á½Í¥Ñ¥½¹Ì€ô½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1P´¹±½¹¥ÑÕ‘”°´¹±…Ñ¥ÑÕ‘”I=4µ•…ÍÕÉ•µ•¹ÑÌ´(€€€€€€€€€€€€€€€)=%8Í½ÕÉ•}±½}É•Ù¥Í¥½¹ÌÈ=8È¹¥€ô´¹É•Ù¥Í¥½¹}¥(€€€€€€€€€€€€€€€]!IÈ¹Í½ÕÉ•}±½}¥€ô€ü9È¹¥Í}ÕÉÉ•¹Ð€ô€Ä(€€€€€€€€€€€€€€€€€9´¹µ•…ÍÕÉ•‘}…Ñ}ÕÑŒ	Q]8€ü9€ü(€€€€€€€€€€€€€€€€€9´¹±…Ñ¥ÑÕ‘”%L9=P9U109´¹±½¹¥ÑÕ‘”%L9=P9U10(€€€€€€€€€€€€€€€€€9´¹±½…Ñ¥½¹}ÅÕ…±¥Ñä€ô€ü(€€€€€€€€€€€€€€€=IH	d´¹µ•…ÍÕÉ•‘}…Ñ}ÕÑŒ°´¹Í•ÅÕ•¹•}¹¼(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€ (€€€€€€€€€€€€€€€€€€€É½Ýl‰Í½ÕÉ•}±½}¥‰t°É½Ýl‰ÍÑ…ÉÑ•‘}…Ñ}ÕÑŒ‰t°(€€€€€€€€€€€€€€€€€€€É½Ýl‰•¹‘•‘}…Ñ}ÕÑŒ‰t°1½…Ñ¥½¹EÕ…±¥Ñä¹Y1%¹Ù…±Õ”°(€€€€€€€€€€€€€€€€¤°(€€€€€€€€€€€€¤¹™•Ñ¡…±° ¤(€€€€€€€É•ÍÕ±Ð€ôÑÕÁ±” (€€€€€€€€€€€€¡Á½Í¥Ñ¥½¹l‰±½¹¥ÑÕ‘”‰t°Á½Í¥Ñ¥½¹l‰±…Ñ¥ÑÕ‘”‰t¤(€€€€€€€€€€€™½ÈÁ½Í¥Ñ¥½¸¥¸Á½Í¥Ñ¥½¹Ì(€€€€€€€€¤(€€€€€€€¥˜É•ÍÕ±Ðè(€€€€€€€€€€€É•ÑÕÉ¸É•ÍÕ±Ð(€€€€€€€¥˜É½Ýl‰•¹Ñ•É}±½¹¥ÑÕ‘”‰t¥Ì¹½Ð9½¹”è(€€€€€€€€€€€É•ÑÕÉ¸€ ¡É½Ýl‰•¹Ñ•É}±½¹¥ÑÕ‘”‰t°É½Ýl‰•¹Ñ•É}±…Ñ¥ÑÕ‘”‰t¤°¤(€€€€€€€É•ÑÕÉ¸€ ¤((€€€‘•˜ÕÉÉ•¹Ñ}µ•…ÍÕÉ•µ•¹Ñ}½Õ¹Ð¡Í•±˜°Í½ÕÉ•}±½}¥èÍÑÈ¤€´ø¥¹Ðè(€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É•ÑÕÉ¸½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€ˆˆˆ(€€€€€€€€€€€€€€€M1P=U9P ¨¤I=4µ•…ÍÕÉ•µ•¹ÑÌ´(€€€€€€€€€€€€€€€)=%8Í½ÕÉ•}±½}É•Ù¥Í¥½¹ÌÈ=8È¹¥€ô´¹É•Ù¥Í¥½¹}¥(€€€€€€€€€€€€€€€]!IÈ¹Í½ÕÉ•}±½}¥€ô€ü9È¹¥Í}ÕÉÉ•¹Ð€ô€Ä(€€€€€€€€€€€€€€€€ˆˆˆ°(€€€€€€€€€€€€€€€€¡Í½ÕÉ•}±½}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¥lÁt((€€€‘•˜É•Ù¥Í¥½¹}½Õ¹Ð¡Í•±˜°Í½ÕÉ•}±½}¥èÍÑÈ¤€´ø¥¹Ðè(€€€€€€€Ý¥Ñ Í•±˜¹}½¹¹•Ñ¥½¸ ¤…Ì½¹¹•Ñ¥½¸è(€€€€€€€€€€€µ¥É…Ñ”¡½¹¹•Ñ¥½¸¤(€€€€€€€€€€€É•ÑÕÉ¸½¹¹•Ñ¥½¸¹•á•ÕÑ” (€€€€€€€€€€€€€€€€‰M1P=U9P ¨¤I=4Í½ÕÉ•}±½}É•Ù¥Í¥½¹Ì]!IÍ½ÕÉ•}±½}¥€ô€üˆ°(€€€€€€€€€€€€€€€€¡Í½ÕÉ•}±½}¥°¤°(€€€€€€€€€€€€¤¹™•Ñ¡½¹” ¥lÁt(
+        mission_id: str | None,
+        source_log_id: str,
+        started: str | None,
+        ended: str | None,
+        now: str,
+    ) -> None:
+        if mission_id is None:
+            return
+        connection.execute(
+            "INSERT OR IGNORE INTO mission_source_logs(mission_id, source_log_id, attached_at_utc) VALUES (?, ?, ?)",
+            (mission_id, source_log_id, now),
+        )
+        connection.execute(
+            """
+            UPDATE missions SET
+                started_at_utc = CASE
+                    WHEN started_at_utc IS NULL OR ? < started_at_utc THEN ?
+                    ELSE started_at_utc END,
+                ended_at_utc = CASE
+                    WHEN ended_at_utc IS NULL OR ? > ended_at_utc THEN ?
+                    ELSE ended_at_utc END,
+                updated_at_utc = ?
+            WHERE id = ?
+            """,
+            (started, started, ended, ended, now, mission_id),
+        )
+
+    @staticmethod
+    def _insert_segment_proposals(
+        connection: sqlite3.Connection,
+        source_log_id: str,
+        revision_id: str,
+        proposals: tuple[SegmentProposal, ...],
+        created_at: str,
+    ) -> None:
+        for proposal in proposals:
+            connection.execute(
+                """
+                INSERT INTO segment_proposals
+                (id, source_log_id, revision_id, proposal_type, started_at_utc,
+                 ended_at_utc, confidence, reason, sample_count, center_latitude,
+                 center_longitude, created_at_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(uuid4()), source_log_id, revision_id,
+                    proposal.proposal_type.value,
+                    _utc_timestamp(proposal.start), _utc_timestamp(proposal.end),
+                    proposal.confidence, proposal.reason, proposal.sample_count,
+                    proposal.center_latitude, proposal.center_longitude, created_at,
+                ),
+            )
+
+    def list_current_segment_proposals(
+        self, source_log_id: str
+    ) -> tuple[SegmentProposal, ...]:
+        """Return proposals belonging only to the current LOG revision."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT p.*, s.original_filename, s.logical_date
+                FROM segment_proposals p
+                JOIN source_log_revisions r ON r.id = p.revision_id
+                JOIN source_logs s ON s.id = p.source_log_id
+                WHERE p.source_log_id = ? AND r.is_current = 1
+                ORDER BY p.started_at_utc, p.proposal_type
+                """,
+                (source_log_id,),
+            ).fetchall()
+        return tuple(self._proposal_from_row(row) for row in rows)
+
+    @staticmethod
+    def _proposal_from_row(row: sqlite3.Row) -> SegmentProposal:
+        return SegmentProposal(
+            id=row["id"],
+            source_log_id=row["source_log_id"],
+            revision_id=row["revision_id"],
+            proposal_type=ProposalType(row["proposal_type"]),
+            start=_parse_datetime(row["started_at_utc"]),
+            end=_parse_datetime(row["ended_at_utc"]),
+            confidence=row["confidence"],
+            reason=row["reason"],
+            sample_count=row["sample_count"],
+            center_latitude=row["center_latitude"],
+            center_longitude=row["center_longitude"],
+            source_name=row["original_filename"],
+            logical_date=row["logical_date"],
+            status=row["status"],
+        )
+
+    def list_mission_segment_proposals(
+        self, mission_id: str, *, pending_only: bool = True
+    ) -> tuple[SegmentProposal, ...]:
+        """List proposals from current revisions attached to one mission."""
+
+        status_clause = "AND p.status = 'pending'" if pending_only else ""
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                f"""
+                SELECT p.*, s.original_filename, s.logical_date
+                FROM segment_proposals p
+                JOIN source_log_revisions r
+                    ON r.id = p.revision_id AND r.is_current = 1
+                JOIN source_logs s ON s.id = p.source_log_id
+                JOIN mission_source_logs ms ON ms.source_log_id = s.id
+                WHERE ms.mission_id = ? {status_clause}
+                ORDER BY s.logical_date, p.started_at_utc, p.proposal_type
+                """,
+                (mission_id,),
+            ).fetchall()
+        return tuple(self._proposal_from_row(row) for row in rows)
+
+    def create_segment(
+        self,
+        source_log_id: str,
+        start: datetime,
+        end: datetime,
+        *,
+        mission_id: str | None = None,
+        segment_type: SegmentType = SegmentType.UNCLASSIFIED,
+        title: str = "",
+        status: str = "draft",
+        include_in_suro: bool = True,
+        detector_height_m: float | None = None,
+        detector_orientation: str = "",
+        route_description: str = "",
+        notes: str = "",
+    ) -> MeasurementSegment:
+        """Create a stable draft segment which survives later LOG revisions."""
+
+        if end < start:
+            raise ValueError("Konec Ãºseku nesmÃ­ bÃ½t pÅ™ed jeho zaÄÃ¡tkem.")
+        if detector_height_m is not None and detector_height_m < 0:
+            raise ValueError("VÃ½Å¡ka detektoru nesmÃ­ bÃ½t zÃ¡pornÃ¡.")
+        if status not in {"draft", "confirmed", "excluded"}:
+            raise ValueError(f"NeznÃ¡mÃ½ stav Ãºseku: {status}")
+        segment_id = str(uuid4())
+        now = utc_now_text()
+        with self._connection() as connection:
+            migrate(connection)
+            if connection.execute(
+                "SELECT 1 FROM source_logs WHERE id = ?", (source_log_id,)
+            ).fetchone() is None:
+                raise KeyError(f"ZdrojovÃ½ LOG {source_log_id} nebyl nalezen.")
+            if mission_id is not None and connection.execute(
+                "SELECT 1 FROM missions WHERE id = ?", (mission_id,)
+            ).fetchone() is None:
+                raise KeyError(f"Mise {mission_id} nebyla nalezena.")
+            connection.execute(
+                """
+                INSERT INTO measurement_segments
+                (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
+                 segment_type, title, status, include_in_suro,
+                 detector_height_m, detector_orientation, route_description,
+                 notes, created_at_utc, updated_at_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    segment_id, source_log_id, mission_id,
+                    _utc_timestamp(start), _utc_timestamp(end),
+                    segment_type.value, title.strip(), status,
+                    int(include_in_suro), detector_height_m,
+                    detector_orientation.strip(), route_description.strip(),
+                    notes.strip(), now, now,
+                ),
+            )
+        return next(
+            item for item in self.list_segments(source_log_id)
+            if item.id == segment_id
+        )
+
+    def confirm_segment_proposal(
+        self,
+        proposal_id: str,
+        mission_id: str,
+        *,
+        segment_type: SegmentType,
+        title: str = "",
+        include_in_suro: bool = True,
+        detector_height_m: float | None = None,
+        detector_orientation: str = "",
+        route_description: str = "",
+        notes: str = "",
+    ) -> MeasurementSegment:
+        """Atomically accept a current proposal and create a confirmed segment."""
+
+        if detector_height_m is not None and detector_height_m < 0:
+            raise ValueError("VÃ½Å¡ka detektoru nesmÃ­ bÃ½t zÃ¡pornÃ¡.")
+        segment_id = str(uuid4())
+        now = utc_now_text()
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                """
+                SELECT p.* FROM segment_proposals p
+                JOIN source_log_revisions r
+                    ON r.id = p.revision_id AND r.is_current = 1
+                JOIN mission_source_logs ms
+                    ON ms.source_log_id = p.source_log_id
+                   AND ms.mission_id = ?
+                WHERE p.id = ? AND p.status = 'pending'
+                """,
+                (mission_id, proposal_id),
+            ).fetchone()
+            if row is None:
+                raise KeyError(
+                    "NÃ¡vrh nebyl nalezen, uÅ¾ byl zpracovÃ¡n nebo nepatÅ™Ã­ "
+                    "do aktivnÃ­ mise."
+                )
+            if row["proposal_type"] == ProposalType.RECORDING_GAP.value:
+                raise ValueError(
+                    "Mezera v zÃ¡znamu je pouze nÃ¡vrh hranice, ne mÄ›Å™icÃ­ Ãºsek."
+                )
+            connection.execute(
+                """
+                INSERT INTO measurement_segments
+                (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
+                 segment_type, title, status, include_in_suro,
+                 detector_height_m, detector_orientation, route_description,
+                 notes, created_at_utc, updated_at_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    segment_id, row["source_log_id"], mission_id,
+                    row["started_at_utc"], row["ended_at_utc"],
+                    segment_type.value, title.strip(), int(include_in_suro),
+                    detector_height_m, detector_orientation.strip(),
+                    route_description.strip(), notes.strip(), now, now,
+                ),
+            )
+            connection.execute(
+                """
+                UPDATE segment_proposals
+                SET status = 'accepted', resolved_segment_id = ?,
+                    resolved_at_utc = ?
+                WHERE id = ?
+                """,
+                (segment_id, now, proposal_id),
+            )
+        return next(
+            segment
+            for segment in self.list_segments(row["source_log_id"])
+            if segment.id == segment_id
+        )
+
+    def dismiss_segment_proposal(self, proposal_id: str) -> None:
+        """Mark one pending proposal as intentionally skipped."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            cursor = connection.execute(
+                """
+                UPDATE segment_proposals
+                SET status = 'dismissed', resolved_at_utc = ?
+                WHERE id = ? AND status = 'pending'
+                """,
+                (utc_now_text(), proposal_id),
+            )
+            if cursor.rowcount != 1:
+                raise KeyError("NÃ¡vrh nebyl nalezen nebo uÅ¾ byl zpracovÃ¡n.")
+
+    def list_proposal_positions(
+        self, proposal_id: str
+    ) -> tuple[tuple[float, float], ...]:
+        """Return trusted current-revision map positions inside a proposal.
+
+        Coordinates are returned as ``(longitude, latitude)`` so the QGIS
+        presentation layer can create WGS 84 geometries without depending on
+        database implementation details.
+        """
+
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                """
+                SELECT p.revision_id, p.started_at_utc, p.ended_at_utc
+                FROM segment_proposals p
+                JOIN source_log_revisions r
+                    ON r.id = p.revision_id AND r.is_current = 1
+                WHERE p.id = ?
+                """,
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError("NÃ¡vrh nebyl nalezen v aktuÃ¡lnÃ­ revizi LOGu.")
+            positions = connection.execute(
+                """
+                SELECT longitude, latitude FROM measurements
+                WHERE revision_id = ?
+                  AND measured_at_utc BETWEEN ? AND ?
+                  AND latitude IS NOT NULL AND longitude IS NOT NULL
+                  AND location_quality = ?
+                ORDER BY measured_at_utc, sequence_no
+                """,
+                (
+                    row["revision_id"], row["started_at_utc"],
+                    row["ended_at_utc"], LocationQuality.VALID.value,
+                ),
+            ).fetchall()
+        return tuple(
+            (position["longitude"], position["latitude"])
+            for position in positions
+        )
+
+    def list_segments(self, source_log_id: str) -> tuple[MeasurementSegment, ...]:
+        """List stable user segments independently from automatic proposals."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT ms.*, s.original_filename, s.logical_date
+                FROM measurement_segments ms
+                JOIN source_logs s ON s.id = ms.source_log_id
+                WHERE ms.source_log_id = ?
+                ORDER BY started_at_utc, ended_at_utc, id
+                """,
+                (source_log_id,),
+            ).fetchall()
+        return tuple(self._segment_from_row(row) for row in rows)
+
+    @staticmethod
+    def _segment_from_row(row: sqlite3.Row) -> MeasurementSegment:
+        return MeasurementSegment(
+            id=row["id"], source_log_id=row["source_log_id"],
+            mission_id=row["mission_id"],
+            start=_parse_datetime(row["started_at_utc"]),
+            end=_parse_datetime(row["ended_at_utc"]),
+            segment_type=SegmentType(row["segment_type"]),
+            title=row["title"], status=row["status"],
+            include_in_suro=bool(row["include_in_suro"]),
+            detector_height_m=row["detector_height_m"],
+            detector_orientation=row["detector_orientation"],
+            route_description=row["route_description"], notes=row["notes"],
+            source_name=row["original_filename"],
+            logical_date=row["logical_date"],
+        )
+
+    def list_mission_segments(
+        self, mission_id: str
+    ) -> tuple[MeasurementSegment, ...]:
+        """List stable confirmed or draft segments in one mission."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT ms.*, s.original_filename, s.logical_date
+                FROM measurement_segments ms
+                JOIN source_logs s ON s.id = ms.source_log_id
+                WHERE ms.mission_id = ?
+                ORDER BY s.logical_date, ms.started_at_utc, ms.ended_at_utc, ms.id
+                """,
+                (mission_id,),
+            ).fetchall()
+        return tuple(self._segment_from_row(row) for row in rows)
+
+    def update_segment(
+        self,
+        segment_id: str,
+        *,
+        segment_type: SegmentType,
+        title: str = "",
+        include_in_suro: bool = True,
+        detector_height_m: float | None = None,
+        detector_orientation: str = "",
+        route_description: str = "",
+        notes: str = "",
+    ) -> MeasurementSegment:
+        """Update user-owned metadata without changing segment boundaries."""
+
+        if detector_height_m is not None and detector_height_m < 0:
+            raise ValueError("VÃ½Å¡ka detektoru nesmÃ­ bÃ½t zÃ¡pornÃ¡.")
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                "SELECT source_log_id FROM measurement_segments WHERE id = ?",
+                (segment_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError("Ãšsek nebyl nalezen.")
+            connection.execute(
+                """
+                UPDATE measurement_segments
+                SET segment_type = ?, title = ?, include_in_suro = ?,
+                    detector_height_m = ?, detector_orientation = ?,
+                    route_description = ?, notes = ?, updated_at_utc = ?
+                WHERE id = ?
+                """,
+                (
+                    segment_type.value, title.strip(), int(include_in_suro),
+                    detector_height_m, detector_orientation.strip(),
+                    route_description.strip(), notes.strip(), utc_now_text(),
+                    segment_id,
+                ),
+            )
+        return next(
+            item for item in self.list_segments(row["source_log_id"])
+            if item.id == segment_id
+        )
+
+    def list_segment_positions(
+        self, segment_id: str
+    ) -> tuple[tuple[float, float], ...]:
+        """Return current map positions for one stable segment.
+
+        If a GPS-loss segment has no usable geometry, its original proposal
+        anchor is returned so the user can still locate the likely entrance.
+        """
+
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                """
+                SELECT ms.source_log_id, ms.started_at_utc, ms.ended_at_utc,
+                       p.center_longitude, p.center_latitude
+                FROM measurement_segments ms
+                LEFT JOIN segment_proposals p
+                    ON p.resolved_segment_id = ms.id
+                WHERE ms.id = ?
+                """,
+                (segment_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError("Ãšsek nebyl nalezen.")
+            positions = connection.execute(
+                """
+                SELECT m.longitude, m.latitude FROM measurements m
+                JOIN source_log_revisions r ON r.id = m.revision_id
+                WHERE r.source_log_id = ? AND r.is_current = 1
+                  AND m.measured_at_utc BETWEEN ? AND ?
+                  AND m.latitude IS NOT NULL AND m.longitude IS NOT NULL
+                  AND m.location_quality = ?
+                ORDER BY m.measured_at_utc, m.sequence_no
+                """,
+                (
+                    row["source_log_id"], row["started_at_utc"],
+                    row["ended_at_utc"], LocationQuality.VALID.value,
+                ),
+            ).fetchall()
+        result = tuple(
+            (position["longitude"], position["latitude"])
+            for position in positions
+        )
+        if result:
+            return result
+        if row["center_longitude"] is not None:
+            return ((row["center_longitude"], row["center_latitude"]),)
+        return ()
+
+    def current_measurement_count(self, source_log_id: str) -> int:
+        with self._connection() as connection:
+            migrate(connection)
+            return connection.execute(
+                """
+                SELECT COUNT(*) FROM measurements m
+                JOIN source_log_revisions r ON r.id = m.revision_id
+                WHERE r.source_log_id = ? AND r.is_current = 1
+                """,
+                (source_log_id,),
+            ).fetchone()[0]
+
+    def revision_count(self, source_log_id: str) -> int:
+        with self._connection() as connection:
+            migrate(connection)
+            return connection.execute(
+                "SELECT COUNT(*) FROM source_log_revisions WHERE source_log_id = ?",
+                (source_log_id,),
+            ).fetchone()[0]
