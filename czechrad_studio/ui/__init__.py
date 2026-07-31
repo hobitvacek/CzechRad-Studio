@@ -5,6 +5,7 @@ from .layers import CreatedLayers, add_analysis_layers
 from .monitor_dialog import MonitorDialog
 from .project_dialog import ProjectDialog
 from .segments_dialog import SegmentsDialog
+from .saved_segments_dialog import SavedSegmentsDialog
 
 __all__ = [
     "CreatedLayers",
@@ -12,5 +13,6 @@ __all__ = [
     "MonitorDialog",
     "ProjectDialog",
     "SegmentsDialog",
+    "SavedSegmentsDialog",
     "add_analysis_layers",
 ]

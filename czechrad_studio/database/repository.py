@@ -685,26 +685,144 @@ class GeoPackageRepository:
             migrate(connection)
             rows = connection.execute(
                 """
-                SELECT * FROM measurement_segments WHERE source_log_id = ?
+                SELECT ms.*, s.original_filename, s.logical_date
+                FROM measurement_segments ms
+                JOIN source_logs s ON s.id = ms.source_log_id
+                WHERE ms.source_log_id = ?
                 ORDER BY started_at_utc, ended_at_utc, id
                 """,
                 (source_log_id,),
             ).fetchall()
-        return tuple(
-            MeasurementSegment(
-                id=row["id"], source_log_id=row["source_log_id"],
-                mission_id=row["mission_id"],
-                start=_parse_datetime(row["started_at_utc"]),
-                end=_parse_datetime(row["ended_at_utc"]),
-                segment_type=SegmentType(row["segment_type"]),
-                title=row["title"], status=row["status"],
-                include_in_suro=bool(row["include_in_suro"]),
-                detector_height_m=row["detector_height_m"],
-                detector_orientation=row["detector_orientation"],
-                route_description=row["route_description"], notes=row["notes"],
-            )
-            for row in rows
+        return tuple(self._segment_from_row(row) for row in rows)
+
+    @staticmethod
+    def _segment_from_row(row: sqlite3.Row) -> MeasurementSegment:
+        return MeasurementSegment(
+            id=row["id"], source_log_id=row["source_log_id"],
+            mission_id=row["mission_id"],
+            start=_parse_datetime(row["started_at_utc"]),
+            end=_parse_datetime(row["ended_at_utc"]),
+            segment_type=SegmentType(row["segment_type"]),
+            title=row["title"], status=row["status"],
+            include_in_suro=bool(row["include_in_suro"]),
+            detector_height_m=row["detector_height_m"],
+            detector_orientation=row["detector_orientation"],
+            route_description=row["route_description"], notes=row["notes"],
+            source_name=row["original_filename"],
+            logical_date=row["logical_date"],
         )
+
+    def list_mission_segments(
+        self, mission_id: str
+    ) -> tuple[MeasurementSegment, ...]:
+        """List stable confirmed or draft segments in one mission."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT ms.*, s.original_filename, s.logical_date
+                FROM measurement_segments ms
+                JOIN source_logs s ON s.id = ms.source_log_id
+                WHERE ms.mission_id = ?
+                ORDER BY s.logical_date, ms.started_at_utc, ms.ended_at_utc, ms.id
+                """,
+                (mission_id,),
+            ).fetchall()
+        return tuple(self._segment_from_row(row) for row in rows)
+
+    def update_segment(
+        self,
+        segment_id: str,
+        *,
+        segment_type: SegmentType,
+        title: str = "",
+        include_in_suro: bool = True,
+        detector_height_m: float | None = None,
+        detector_orientation: str = "",
+        route_description: str = "",
+        notes: str = "",
+    ) -> MeasurementSegment:
+        """Update user-owned metadata without changing segment boundaries."""
+
+        if detector_height_m is not None and detector_height_m < 0:
+            raise ValueError("Výška detektoru nesmí být záporná.")
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                "SELECT source_log_id FROM measurement_segments WHERE id = ?",
+                (segment_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError("Úsek nebyl nalezen.")
+            connection.execute(
+                """
+                UPDATE measurement_segments
+                SET segment_type = ?, title = ?, include_in_suro = ?,
+                    detector_height_m = ?, detector_orientation = ?,
+                    route_description = ?, notes = ?, updated_at_utc = ?
+                WHERE id = ?
+                """,
+                (
+                    segment_type.value, title.strip(), int(include_in_suro),
+                    detector_height_m, detector_orientation.strip(),
+                    route_description.strip(), notes.strip(), utc_now_text(),
+                    segment_id,
+                ),
+            )
+        return next(
+            item for item in self.list_segments(row["source_log_id"])
+            if item.id == segment_id
+        )
+
+    def list_segment_positions(
+        self, segment_id: str
+    ) -> tuple[tuple[float, float], ...]:
+        """Return current map positions for one stable segment.
+
+        If a GPS-loss segment has no usable geometry, its original proposal
+        anchor is returned so the user can still locate the likely entrance.
+        """
+
+        with self._connection() as connection:
+            migrate(connection)
+            row = connection.execute(
+                """
+                SELECT ms.source_log_id, ms.started_at_utc, ms.ended_at_utc,
+                       p.center_longitude, p.center_latitude
+                FROM measurement_segments ms
+                LEFT JOIN segment_proposals p
+                    ON p.resolved_segment_id = ms.id
+                WHERE ms.id = ?
+                """,
+                (segment_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError("Úsek nebyl nalezen.")
+            positions = connection.execute(
+                """
+                SELECT m.longitude, m.latitude FROM measurements m
+                JOIN source_log_revisions r ON r.id = m.revision_id
+                WHERE r.source_log_id = ? AND r.is_current = 1
+                  AND m.measured_at_utc BETWEEN ? AND ?
+                  AND m.latitude IS NOT NULL AND m.longitude IS NOT NULL
+                  AND m.location_quality = ?
+                ORDER BY m.measured_at_utc, m.sequence_no
+                """,
+                (
+                    row["source_log_id"], row["started_at_utc"],
+                    row["ended_at_utc"], LocationQuality.VALID.value,
+                ),
+            ).fetchall()
+        result = tuple(
+            (position["longitude"], position["latitude"])
+            for position in positions
+        )
+        if result:
+            return result
+        if row["center_longitude"] is not None:
+            return ((row["center_longitude"], row["center_latitude"]),)
+        return ()
 
     def current_measurement_count(self, source_log_id: str) -> int:
         with self._connection() as connection:

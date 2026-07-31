@@ -195,6 +195,26 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual("confirmed", segment.status)
         self.assertEqual(1.0, segment.detector_height_m)
         self.assertEqual("dolů", segment.detector_orientation)
+        self.assertEqual((segment,), self.repository.list_mission_segments(mission.id))
+        self.assertEqual(
+            37, len(self.repository.list_segment_positions(segment.id))
+        )
+
+        updated = self.repository.update_segment(
+            segment.id,
+            segment_type=SegmentType.WALKING,
+            title="Opravený název",
+            include_in_suro=False,
+            detector_height_m=0.8,
+            detector_orientation="dopředu",
+            route_description="Opravená trasa",
+            notes="Upraveno po kontrole mapy",
+        )
+        self.assertEqual(SegmentType.WALKING, updated.segment_type)
+        self.assertEqual("Opravený název", updated.title)
+        self.assertFalse(updated.include_in_suro)
+        self.assertEqual(0.8, updated.detector_height_m)
+        self.assertEqual("Opravená trasa", updated.route_description)
         self.assertEqual((), self.repository.list_mission_segment_proposals(mission.id))
         all_proposals = self.repository.list_mission_segment_proposals(
             mission.id, pending_only=False

@@ -27,6 +27,7 @@ from .ui import (
     ImportDialog,
     MonitorDialog,
     ProjectDialog,
+    SavedSegmentsDialog,
     SegmentsDialog,
     add_analysis_layers,
 )
@@ -41,6 +42,7 @@ class CzechRadStudioPlugin:
         self.project_action = None
         self.monitor_action = None
         self.segments_action = None
+        self.saved_segments_action = None
         self.monitor_timer = QTimer(self.iface.mainWindow())
         self.monitor_timer.setInterval(5000)
         self.monitor_timer.timeout.connect(self._poll_monitor)
@@ -51,6 +53,7 @@ class CzechRadStudioPlugin:
         self._latest_nogps = None
         self._proposal_focus_layer = None
         self._segments_dialog = None
+        self._saved_segments_dialog = None
 
     def initGui(self):  # noqa: N802 - QGIS requires this name
         self.action = QAction(PLUGIN_NAME, self.iface.mainWindow())
@@ -77,6 +80,14 @@ class CzechRadStudioPlugin:
         )
         self.segments_action.triggered.connect(self.review_segments)
         self.iface.addPluginToMenu(f"&{PLUGIN_NAME}", self.segments_action)
+
+        self.saved_segments_action = QAction(
+            "Uložené úseky…", self.iface.mainWindow()
+        )
+        self.saved_segments_action.triggered.connect(self.review_saved_segments)
+        self.iface.addPluginToMenu(
+            f"&{PLUGIN_NAME}", self.saved_segments_action
+        )
         self._apply_monitor_settings()
 
     def unload(self):
@@ -89,6 +100,10 @@ class CzechRadStudioPlugin:
             self._segments_dialog.close()
             self._segments_dialog.deleteLater()
             self._segments_dialog = None
+        if self._saved_segments_dialog is not None:
+            self._saved_segments_dialog.close()
+            self._saved_segments_dialog.deleteLater()
+            self._saved_segments_dialog = None
         if self.project_action is not None:
             self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.project_action)
             self.project_action.deleteLater()
@@ -101,6 +116,12 @@ class CzechRadStudioPlugin:
             self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.segments_action)
             self.segments_action.deleteLater()
             self.segments_action = None
+        if self.saved_segments_action is not None:
+            self.iface.removePluginMenu(
+                f"&{PLUGIN_NAME}", self.saved_segments_action
+            )
+            self.saved_segments_action.deleteLater()
+            self.saved_segments_action = None
 
         self.iface.removePluginMenu(f"&{PLUGIN_NAME}", self.action)
         self.iface.removeToolBarIcon(self.action)
@@ -153,6 +174,37 @@ class CzechRadStudioPlugin:
             self._segments_dialog.deleteLater()
             self._segments_dialog = None
 
+    def review_saved_segments(self):
+        database_path, mission_id = ProjectDialog.active_configuration()
+        if not database_path or not mission_id:
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                "Nejprve vyber projektový GeoPackage a aktivní misi v nabídce "
+                "„Projekt a aktivní mise…“.",
+            )
+            return
+        if self._saved_segments_dialog is not None:
+            self._saved_segments_dialog.show()
+            self._saved_segments_dialog.raise_()
+            self._saved_segments_dialog.activateWindow()
+            return
+        self._saved_segments_dialog = SavedSegmentsDialog(
+            database_path, mission_id, self.iface.mainWindow()
+        )
+        self._saved_segments_dialog.segment_focus_requested.connect(
+            lambda segment: self._focus_saved_segment(database_path, segment)
+        )
+        self._saved_segments_dialog.finished.connect(
+            self._saved_segments_dialog_finished
+        )
+        self._saved_segments_dialog.show()
+
+    def _saved_segments_dialog_finished(self, _result):
+        if self._saved_segments_dialog is not None:
+            self._saved_segments_dialog.deleteLater()
+            self._saved_segments_dialog = None
+
     def _remove_proposal_focus_layer(self):
         if self._proposal_focus_layer is None:
             return
@@ -172,9 +224,33 @@ class CzechRadStudioPlugin:
             )
             return
 
+        self._show_focus_positions(
+            positions,
+            "CzechRad – vybraný návrh",
+            "Vybraný návrh je v mapě zvýrazněn fialově.",
+        )
+
+    def _focus_saved_segment(self, database_path, segment):
+        positions = GeoPackageRepository(database_path).list_segment_positions(
+            segment.id
+        )
+        if not positions:
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                "Uložený úsek nemá použitelnou polohu pro zobrazení v mapě.",
+            )
+            return
+        self._show_focus_positions(
+            positions,
+            "CzechRad – uložený úsek",
+            "Uložený úsek je v mapě zvýrazněn fialově.",
+        )
+
+    def _show_focus_positions(self, positions, layer_name, success_message):
         self._remove_proposal_focus_layer()
         layer = QgsVectorLayer(
-            "Point?crs=EPSG:4326", "CzechRad – vybraný návrh", "memory"
+            "Point?crs=EPSG:4326", layer_name, "memory"
         )
         features = []
         for longitude, latitude in positions:
@@ -206,7 +282,7 @@ class CzechRadStudioPlugin:
         self.iface.mapCanvas().setFocus()
         self.iface.messageBar().pushSuccess(
             PLUGIN_NAME,
-            "Vybraný návrh je v mapě zvýrazněn fialově.",
+            success_message,
         )
 
     @staticmethod
