@@ -6,6 +6,9 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 - Added a temporary high-contrast QGIS map layer for locating a selected
   segment proposal without modifying the source LOG or stored measurements.
+- Fixed proposal highlighting not appearing while the segment editor blocked
+  QGIS canvas repaint; the editor is now non-modal and explicitly refreshes
+  the map after zooming.
 - Added a QGIS 3/4 segment-review dialog for proposals in the active mission.
 - Added confirmation of stop and GPS-loss proposals with movement type, title,
   detector height and orientation, route description, notes and SÚRO inclusion.

@@ -50,7 +50,7 @@ def _enum(owner, scoped_name, member_name):
 
 
 class SegmentsDialog(QDialog):
-    """Modal, map-independent first editor for one mission's proposals."""
+    """Non-blocking editor which can be used alongside the QGIS map."""
 
     proposal_focus_requested = pyqtSignal(object)
 
@@ -61,7 +61,10 @@ class SegmentsDialog(QDialog):
         self.proposals = ()
 
         self.setWindowTitle("CzechRad Studio – měřicí úseky")
-        self.setModal(True)
+        # The user must be able to inspect and move around the map while this
+        # editor stays open. A modal dialog prevented reliable canvas repaint
+        # on some QGIS/Windows combinations.
+        self.setModal(False)
         self.resize(1050, 680)
 
         self.summary_label = QLabel(self)
