@@ -4,6 +4,15 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Added independent recording identities for multiple cards or recording
+  sessions from the same device on the same UTC day.
+- Distinguished a continuing LOG revision from a separate same-day recording
+  by overlap of immutable raw measurement hashes instead of the filename.
+- Kept each recording's NOGPS correlation, current revision, proposals and
+  saved-segment map positions isolated while allowing the recordings to share
+  one daily mission.
+- Added collision-safe display labels such as `07960808.LOG (měření 2)` without
+  renaming or modifying the original source files.
 - Added an active-mission overview of saved measurement segments with metadata
   editing and map focus based on the current LOG revision.
 - Preserved the original GPS-loss entry anchor for locating indoor segments

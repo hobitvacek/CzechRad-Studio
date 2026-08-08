@@ -37,6 +37,8 @@ class ImportDisposition(str, Enum):
 @dataclass(frozen=True)
 class StoredImport:
     source_log_id: str
+    recording_id: str
+    recording_sequence: int
     revision_id: str
     disposition: ImportDisposition
     measurement_count: int
@@ -204,6 +206,8 @@ class GeoPackageRepository:
         started = _utc_timestamp(min(timestamps)) if timestamps else None
         ended = _utc_timestamp(max(timestamps)) if timestamps else None
         source_log_id = ""
+        recording_id = ""
+        recording_sequence = 0
         revision_id = ""
 
         measurement_count = len(analysis.track_validations) + len(matched_nogps)
@@ -249,8 +253,7 @@ class GeoPackageRepository:
                     "SELECT id FROM source_logs WHERE device_id = ? AND logical_date = ?",
                     (device_id, analysis.expected_date.isoformat()),
                 ).fetchone()
-                created = existing_source is None
-                if created:
+                if existing_source is None:
                     source_log_id = str(uuid4())
                     connection.execute(
                         """
@@ -265,8 +268,11 @@ class GeoPackageRepository:
 
                 same = connection.execute(
                     """
-                    SELECT id, measurement_count FROM source_log_revisions
-                    WHERE source_log_id = ? AND content_sha256 = ?
+                    SELECT r.id, r.measurement_count, r.recording_id,
+                           sr.sequence_no
+                    FROM source_log_revisions r
+                    JOIN source_recordings sr ON sr.id = r.recording_id
+                    WHERE r.source_log_id = ? AND r.content_sha256 = ?
                       AND COALESCE(nogps_sha256, '') = COALESCE(?, '')
                     """,
                     (source_log_id, content_sha, nogps_sha),
@@ -275,6 +281,8 @@ class GeoPackageRepository:
                     self._attach_mission(connection, mission_id, source_log_id, started, ended, imported_at)
                     return StoredImport(
                         source_log_id=source_log_id,
+                        recording_id=same["recording_id"],
+                        recording_sequence=same["sequence_no"],
                         revision_id=same["id"],
                         disposition=ImportDisposition.UNCHANGED,
                         measurement_count=same["measurement_count"],
@@ -284,29 +292,92 @@ class GeoPackageRepository:
                         ).fetchone()[0],
                     )
 
-                had_revision = connection.execute(
-                    "SELECT 1 FROM source_log_revisions WHERE source_log_id = ? LIMIT 1",
+                new_hashes = {
+                    hashlib.sha256(
+                        result.measurement.raw_line.encode(
+                            "utf-8", errors="replace"
+                        )
+                    ).hexdigest()
+                    for result in analysis.track_validations
+                }
+                current_rows = connection.execute(
+                    """
+                    SELECT r.recording_id, sr.sequence_no, m.raw_line_sha256
+                    FROM source_log_revisions r
+                    JOIN source_recordings sr ON sr.id = r.recording_id
+                    LEFT JOIN measurements m
+                      ON m.revision_id = r.id AND m.record_kind = 'track'
+                    WHERE r.source_log_id = ? AND r.is_current = 1
+                    """,
                     (source_log_id,),
+                ).fetchall()
+                overlaps = {}
+                sequences = {}
+                for row in current_rows:
+                    sequences[row["recording_id"]] = row["sequence_no"]
+                    if row["raw_line_sha256"] in new_hashes:
+                        overlaps[row["recording_id"]] = (
+                            overlaps.get(row["recording_id"], 0) + 1
+                        )
+                if overlaps:
+                    recording_id = max(
+                        overlaps,
+                        key=lambda candidate: (
+                            overlaps[candidate], -sequences[candidate]
+                        ),
+                    )
+                    recording_sequence = sequences[recording_id]
+                else:
+                    recording_sequence = connection.execute(
+                        """
+                        SELECT COALESCE(MAX(sequence_no), 0) + 1
+                        FROM source_recordings WHERE source_log_id = ?
+                        """,
+                        (source_log_id,),
+                    ).fetchone()[0]
+                    recording_id = str(uuid4())
+                    connection.execute(
+                        """
+                        INSERT INTO source_recordings
+                        (id, source_log_id, sequence_no, original_filename,
+                         started_at_utc, ended_at_utc, created_at_utc,
+                         updated_at_utc)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            recording_id, source_log_id, recording_sequence,
+                            track_file.name, started, ended, imported_at,
+                            imported_at,
+                        ),
+                    )
+
+                had_revision = connection.execute(
+                    "SELECT 1 FROM source_log_revisions "
+                    "WHERE recording_id = ? LIMIT 1",
+                    (recording_id,),
                 ).fetchone() is not None
                 connection.execute(
-                    "UPDATE source_log_revisions SET is_current = 0 WHERE source_log_id = ?",
-                    (source_log_id,),
+                    "UPDATE source_log_revisions SET is_current = 0 "
+                    "WHERE recording_id = ?",
+                    (recording_id,),
                 )
                 revision_id = str(uuid4())
                 connection.execute(
                     """
                     INSERT INTO source_log_revisions
-                    (id, source_log_id, content_sha256, nogps_sha256, source_path,
-                     source_filename, size_bytes, modified_at_utc, parser_version,
-                     imported_at_utc, started_at_utc, ended_at_utc,
-                     measurement_count, parse_failure_count, is_current)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                    (id, source_log_id, recording_id, content_sha256,
+                     nogps_sha256, source_path, source_filename, size_bytes,
+                     modified_at_utc, parser_version, imported_at_utc,
+                     started_at_utc, ended_at_utc, measurement_count,
+                     parse_failure_count, is_current)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
                     """,
                     (
-                        revision_id, source_log_id, content_sha, nogps_sha,
-                        str(track_file), track_file.name, stat.st_size, modified,
-                        PARSER_VERSION, imported_at, started, ended,
-                        measurement_count, analysis.failure_count,
+                        revision_id, source_log_id, recording_id, content_sha,
+                        nogps_sha, str(track_file), track_file.name,
+                        stat.st_size, modified, PARSER_VERSION, imported_at,
+                        started, ended, measurement_count,
+                        analysis.failure_count,
                     ),
                 )
                 for sequence, validation in enumerate(analysis.track_validations):
@@ -326,9 +397,23 @@ class GeoPackageRepository:
                     "UPDATE source_logs SET updated_at_utc = ? WHERE id = ?",
                     (imported_at, source_log_id),
                 )
+                connection.execute(
+                    """
+                    UPDATE source_recordings
+                    SET original_filename = ?, started_at_utc = ?,
+                        ended_at_utc = ?, updated_at_utc = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        track_file.name, started, ended, imported_at,
+                        recording_id,
+                    ),
+                )
                 self._attach_mission(connection, mission_id, source_log_id, started, ended, imported_at)
                 return StoredImport(
                     source_log_id=source_log_id,
+                    recording_id=recording_id,
+                    recording_sequence=recording_sequence,
                     revision_id=revision_id,
                     disposition=ImportDisposition.REVISED if had_revision else ImportDisposition.CREATED,
                     measurement_count=measurement_count,
@@ -433,9 +518,15 @@ class GeoPackageRepository:
             migrate(connection)
             rows = connection.execute(
                 """
-                SELECT p.*, s.original_filename, s.logical_date
+                SELECT p.*,
+                       CASE WHEN sr.sequence_no > 1
+                            THEN sr.original_filename || ' (měření ' ||
+                                 sr.sequence_no || ')'
+                            ELSE sr.original_filename END AS original_filename,
+                       s.logical_date
                 FROM segment_proposals p
                 JOIN source_log_revisions r ON r.id = p.revision_id
+                JOIN source_recordings sr ON sr.id = r.recording_id
                 JOIN source_logs s ON s.id = p.source_log_id
                 WHERE p.source_log_id = ? AND r.is_current = 1
                 ORDER BY p.started_at_utc, p.proposal_type
@@ -473,10 +564,16 @@ class GeoPackageRepository:
             migrate(connection)
             rows = connection.execute(
                 f"""
-                SELECT p.*, s.original_filename, s.logical_date
+                SELECT p.*,
+                       CASE WHEN sr.sequence_no > 1
+                            THEN sr.original_filename || ' (měření ' ||
+                                 sr.sequence_no || ')'
+                            ELSE sr.original_filename END AS original_filename,
+                       s.logical_date
                 FROM segment_proposals p
                 JOIN source_log_revisions r
                     ON r.id = p.revision_id AND r.is_current = 1
+                JOIN source_recordings sr ON sr.id = r.recording_id
                 JOIN source_logs s ON s.id = p.source_log_id
                 JOIN mission_source_logs ms ON ms.source_log_id = s.id
                 WHERE ms.mission_id = ? {status_clause}
@@ -485,6 +582,40 @@ class GeoPackageRepository:
                 (mission_id,),
             ).fetchall()
         return tuple(self._proposal_from_row(row) for row in rows)
+
+    @staticmethod
+    def _recording_for_interval(
+        connection: sqlite3.Connection,
+        source_log_id: str,
+        start: datetime,
+        end: datetime,
+    ) -> str:
+        """Choose the current recording which best overlaps a manual segment."""
+
+        rows = connection.execute(
+            """
+            SELECT recording_id, started_at_utc, ended_at_utc
+            FROM source_log_revisions
+            WHERE source_log_id = ? AND is_current = 1
+            """,
+            (source_log_id,),
+        ).fetchall()
+        candidates = []
+        for row in rows:
+            recording_start = _parse_datetime(row["started_at_utc"])
+            recording_end = _parse_datetime(row["ended_at_utc"])
+            if recording_start is None or recording_end is None:
+                continue
+            overlap = (
+                min(end, recording_end) - max(start, recording_start)
+            ).total_seconds()
+            if overlap >= 0:
+                candidates.append((overlap, row["recording_id"]))
+        if not candidates:
+            raise ValueError(
+                "Čas úseku nepatří do žádného aktuálního měření tohoto dne."
+            )
+        return max(candidates, key=lambda item: item[0])[1]
 
     def create_segment(
         self,
@@ -522,17 +653,20 @@ class GeoPackageRepository:
                 "SELECT 1 FROM missions WHERE id = ?", (mission_id,)
             ).fetchone() is None:
                 raise KeyError(f"Mise {mission_id} nebyla nalezena.")
+            recording_id = self._recording_for_interval(
+                connection, source_log_id, start, end
+            )
             connection.execute(
                 """
                 INSERT INTO measurement_segments
-                (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
-                 segment_type, title, status, include_in_suro,
+                (id, source_log_id, recording_id, mission_id, started_at_utc,
+                 ended_at_utc, segment_type, title, status, include_in_suro,
                  detector_height_m, detector_orientation, route_description,
                  notes, created_at_utc, updated_at_utc)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    segment_id, source_log_id, mission_id,
+                    segment_id, source_log_id, recording_id, mission_id,
                     _utc_timestamp(start), _utc_timestamp(end),
                     segment_type.value, title.strip(), status,
                     int(include_in_suro), detector_height_m,
@@ -568,7 +702,7 @@ class GeoPackageRepository:
             migrate(connection)
             row = connection.execute(
                 """
-                SELECT p.* FROM segment_proposals p
+                SELECT p.*, r.recording_id FROM segment_proposals p
                 JOIN source_log_revisions r
                     ON r.id = p.revision_id AND r.is_current = 1
                 JOIN mission_source_logs ms
@@ -590,14 +724,15 @@ class GeoPackageRepository:
             connection.execute(
                 """
                 INSERT INTO measurement_segments
-                (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
-                 segment_type, title, status, include_in_suro,
+                (id, source_log_id, recording_id, mission_id, started_at_utc,
+                 ended_at_utc, segment_type, title, status, include_in_suro,
                  detector_height_m, detector_orientation, route_description,
                  notes, created_at_utc, updated_at_utc)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    segment_id, row["source_log_id"], mission_id,
+                    segment_id, row["source_log_id"], row["recording_id"],
+                    mission_id,
                     row["started_at_utc"], row["ended_at_utc"],
                     segment_type.value, title.strip(), int(include_in_suro),
                     detector_height_m, detector_orientation.strip(),
@@ -685,9 +820,15 @@ class GeoPackageRepository:
             migrate(connection)
             rows = connection.execute(
                 """
-                SELECT ms.*, s.original_filename, s.logical_date
+                SELECT ms.*,
+                       CASE WHEN sr.sequence_no > 1
+                            THEN sr.original_filename || ' (měření ' ||
+                                 sr.sequence_no || ')'
+                            ELSE sr.original_filename END AS original_filename,
+                       s.logical_date
                 FROM measurement_segments ms
                 JOIN source_logs s ON s.id = ms.source_log_id
+                JOIN source_recordings sr ON sr.id = ms.recording_id
                 WHERE ms.source_log_id = ?
                 ORDER BY started_at_utc, ended_at_utc, id
                 """,
@@ -721,9 +862,15 @@ class GeoPackageRepository:
             migrate(connection)
             rows = connection.execute(
                 """
-                SELECT ms.*, s.original_filename, s.logical_date
+                SELECT ms.*,
+                       CASE WHEN sr.sequence_no > 1
+                            THEN sr.original_filename || ' (měření ' ||
+                                 sr.sequence_no || ')'
+                            ELSE sr.original_filename END AS original_filename,
+                       s.logical_date
                 FROM measurement_segments ms
                 JOIN source_logs s ON s.id = ms.source_log_id
+                JOIN source_recordings sr ON sr.id = ms.recording_id
                 WHERE ms.mission_id = ?
                 ORDER BY s.logical_date, ms.started_at_utc, ms.ended_at_utc, ms.id
                 """,
@@ -788,7 +935,8 @@ class GeoPackageRepository:
             migrate(connection)
             row = connection.execute(
                 """
-                SELECT ms.source_log_id, ms.started_at_utc, ms.ended_at_utc,
+                SELECT ms.source_log_id, ms.recording_id, ms.started_at_utc,
+                       ms.ended_at_utc,
                        p.center_longitude, p.center_latitude
                 FROM measurement_segments ms
                 LEFT JOIN segment_proposals p
@@ -803,15 +951,17 @@ class GeoPackageRepository:
                 """
                 SELECT m.longitude, m.latitude FROM measurements m
                 JOIN source_log_revisions r ON r.id = m.revision_id
-                WHERE r.source_log_id = ? AND r.is_current = 1
+                WHERE r.source_log_id = ? AND r.recording_id = ?
+                  AND r.is_current = 1
                   AND m.measured_at_utc BETWEEN ? AND ?
                   AND m.latitude IS NOT NULL AND m.longitude IS NOT NULL
                   AND m.location_quality = ?
                 ORDER BY m.measured_at_utc, m.sequence_no
                 """,
                 (
-                    row["source_log_id"], row["started_at_utc"],
-                    row["ended_at_utc"], LocationQuality.VALID.value,
+                    row["source_log_id"], row["recording_id"],
+                    row["started_at_utc"], row["ended_at_utc"],
+                    LocationQuality.VALID.value,
                 ),
             ).fetchall()
         result = tuple(

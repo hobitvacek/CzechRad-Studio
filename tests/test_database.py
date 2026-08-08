@@ -12,6 +12,7 @@ from czechrad_studio.database import (
     ImportDisposition,
     SCHEMA_VERSION,
 )
+from czechrad_studio.database import schema as schema_module
 from czechrad_studio.database.schema import GPKG_APPLICATION_ID
 from czechrad_studio.importer import analyze_log_files, calculate_checksum
 from czechrad_studio.segments import ProposalType, SegmentType
@@ -52,6 +53,18 @@ class GeoPackageRepositoryTest(unittest.TestCase):
                     "PRAGMA table_info(segment_proposals)"
                 )
             }
+            revision_columns = {
+                row[1]
+                for row in connection.execute(
+                    "PRAGMA table_info(source_log_revisions)"
+                )
+            }
+            recording_tables = connection.execute(
+                """
+                SELECT COUNT(*) FROM sqlite_master
+                WHERE type = 'table' AND name = 'source_recordings'
+                """
+            ).fetchone()[0]
         finally:
             connection.close()
 
@@ -65,6 +78,91 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertIn("calibration_cpm_per_usvh", device_columns)
         self.assertIn("status", proposal_columns)
         self.assertIn("resolved_segment_id", proposal_columns)
+        self.assertIn("recording_id", revision_columns)
+        self.assertEqual(1, recording_tables)
+
+    def test_migrates_existing_version_4_data_to_first_recording(self):
+        legacy_database = self.root / "CzechRad_v4.gpkg"
+        connection = sqlite3.connect(str(legacy_database))
+        try:
+            schema_module._create_geopackage_core(connection)
+            schema_module._migration_1(connection)
+            schema_module._migration_2(connection)
+            schema_module._migration_3(connection)
+            schema_module._migration_4(connection)
+            now = "2026-07-17T18:00:00+00:00"
+            connection.execute(
+                """
+                INSERT INTO devices
+                (id, serial, model, created_at_utc, device_type, device_family,
+                 calibration_cpm_per_usvh)
+                VALUES (1, '0796', 'CzechRad', ?, 'CZRA1', 'CzechRad', 328.5)
+                """,
+                (now,),
+            )
+            connection.execute(
+                """
+                INSERT INTO source_logs
+                (id, device_id, logical_date, original_filename,
+                 created_at_utc, updated_at_utc)
+                VALUES ('log-1', 1, '2026-07-17', '07960717.LOG', ?, ?)
+                """,
+                (now, now),
+            )
+            connection.execute(
+                """
+                INSERT INTO source_log_revisions
+                (id, source_log_id, content_sha256, nogps_sha256, source_path,
+                 source_filename, size_bytes, modified_at_utc, parser_version,
+                 imported_at_utc, started_at_utc, ended_at_utc,
+                 measurement_count, parse_failure_count, is_current)
+                VALUES ('revision-1', 'log-1', ?, NULL, 'D:/07960717.LOG',
+                        '07960717.LOG', 123, ?, '0.5.2', ?, ?, ?, 5, 0, 1)
+                """,
+                ("a" * 64, now, now, now, "2026-07-17T18:00:20+00:00"),
+            )
+            connection.execute(
+                """
+                INSERT INTO measurement_segments
+                (id, source_log_id, mission_id, started_at_utc, ended_at_utc,
+                 segment_type, title, status, include_in_suro,
+                 detector_height_m, detector_orientation, route_description,
+                 notes, created_at_utc, updated_at_utc)
+                VALUES ('segment-1', 'log-1', NULL, ?, ?, 'walking',
+                        'Starší úsek', 'confirmed', 1, 1.0, 'dolů',
+                        'Testovací trasa', '', ?, ?)
+                """,
+                (now, "2026-07-17T18:00:20+00:00", now, now),
+            )
+            connection.commit()
+        finally:
+            connection.close()
+
+        repository = GeoPackageRepository(legacy_database)
+        self.assertEqual(SCHEMA_VERSION, repository.initialize())
+
+        connection = sqlite3.connect(str(legacy_database))
+        try:
+            recording = connection.execute(
+                """
+                SELECT id, source_log_id, sequence_no, original_filename
+                FROM source_recordings
+                """
+            ).fetchone()
+            revision_recording = connection.execute(
+                "SELECT recording_id, is_current FROM source_log_revisions"
+            ).fetchone()
+            segment_recording = connection.execute(
+                "SELECT recording_id FROM measurement_segments"
+            ).fetchone()[0]
+        finally:
+            connection.close()
+
+        self.assertEqual(
+            ("legacy-log-1", "log-1", 1, "07960717.LOG"), recording
+        )
+        self.assertEqual(("legacy-log-1", 1), revision_recording)
+        self.assertEqual("legacy-log-1", segment_recording)
 
     def test_import_stores_detected_device_metadata(self):
         analysis = analyze_log_files(self.track)
@@ -279,6 +377,72 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertNotEqual(first.revision_id, revised.revision_id)
         self.assertEqual(2, self.repository.revision_count(first.source_log_id))
         self.assertEqual(5, self.repository.current_measurement_count(first.source_log_id))
+
+    def test_independent_same_day_recordings_keep_separate_current_revisions(self):
+        mission = self.repository.create_mission("Dvě karty v jednom dni")
+        first = self.repository.store_import(
+            analyze_log_files(self.track), self.track, mission_id=mission.id
+        )
+
+        second_folder = self.root / "second-card"
+        second_folder.mkdir()
+        second_track = second_folder / self.track.name
+        payloads = (
+            "CZRA1,TEST,2026-07-17T18:00:00Z,42,3,200,A,"
+            "5000.1000,N,01400.1000,E,251.00,A,9,90",
+            "CZRA1,TEST,2026-07-17T18:00:05Z,43,4,204,A,"
+            "5000.1010,N,01400.1010,E,251.00,A,9,90",
+        )
+        second_track.write_text(
+            "\n".join(
+                f"${payload}*{calculate_checksum(payload):X}"
+                for payload in payloads
+            ) + "\n",
+            encoding="utf-8",
+        )
+        second = self.repository.store_import(
+            analyze_log_files(second_track),
+            second_track,
+            mission_id=mission.id,
+        )
+
+        self.assertEqual(ImportDisposition.CREATED, first.disposition)
+        self.assertEqual(ImportDisposition.CREATED, second.disposition)
+        self.assertEqual(first.source_log_id, second.source_log_id)
+        self.assertNotEqual(first.recording_id, second.recording_id)
+        self.assertEqual(1, first.recording_sequence)
+        self.assertEqual(2, second.recording_sequence)
+        self.assertEqual(2, self.repository.revision_count(first.source_log_id))
+        self.assertEqual(
+            7, self.repository.current_measurement_count(first.source_log_id)
+        )
+
+        with self.track.open("a", encoding="utf-8") as handle:
+            handle.write("\n# later copy of the first card recording\n")
+        revised = self.repository.store_import(
+            analyze_log_files(self.track), self.track, mission_id=mission.id
+        )
+
+        self.assertEqual(ImportDisposition.REVISED, revised.disposition)
+        self.assertEqual(first.recording_id, revised.recording_id)
+        self.assertEqual(1, revised.recording_sequence)
+        self.assertEqual(3, self.repository.revision_count(first.source_log_id))
+        self.assertEqual(
+            7, self.repository.current_measurement_count(first.source_log_id)
+        )
+
+        connection = sqlite3.connect(str(self.database))
+        try:
+            recording_count = connection.execute(
+                "SELECT COUNT(*) FROM source_recordings"
+            ).fetchone()[0]
+            current_count = connection.execute(
+                "SELECT COUNT(*) FROM source_log_revisions WHERE is_current = 1"
+            ).fetchone()[0]
+        finally:
+            connection.close()
+        self.assertEqual(2, recording_count)
+        self.assertEqual(2, current_count)
 
     def test_tracks_mission_range_and_stores_no_raw_gps_lines(self):
         mission = self.repository.create_mission("Audit")
