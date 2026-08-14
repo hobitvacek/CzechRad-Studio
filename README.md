@@ -65,6 +65,7 @@ začátek, červený konec a následný formulář umožní doplnit metadata ús
 - [Architektura](docs/ARCHITECTURE.md)
 - [Roadmapa](docs/ROADMAP.md)
 - [Návrh exportu pro SÚRO](docs/SURO_EXPORT.md)
+- [Jednoduchý uživatelský návod](docs/UZIVATELSKY_NAVOD.md)
 
 ## Licence a původ
 
