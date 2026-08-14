@@ -408,13 +408,14 @@ class CzechRadStudioPlugin:
         database_message = ""
         if stored is not None:
             disposition_labels = {
-                ImportDisposition.CREATED: "nový denní LOG uložen",
-                ImportDisposition.REVISED: "uložena nová revize denního LOGu",
+                ImportDisposition.CREATED: "nové samostatné měření uloženo",
+                ImportDisposition.REVISED: "uložena nová revize měření",
                 ImportDisposition.UNCHANGED: "databáze beze změny",
             }
             database_message = (
                 f"\nDatabáze: {disposition_labels[stored.disposition]} "
                 f"({stored.measurement_count} měření)"
+                f"\nPořadí měření v daném dni: {stored.recording_sequence}"
                 f"\nAutomatické návrhy úseků: {stored.proposal_count}"
             )
         QMessageBox.information(

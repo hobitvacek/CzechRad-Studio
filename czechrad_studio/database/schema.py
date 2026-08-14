@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime, timezone
 
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 GPKG_APPLICATION_ID = 0x47504B47
 GPKG_USER_VERSION = 10300
 
@@ -311,6 +311,119 @@ def _migration_4(connection: sqlite3.Connection) -> None:
     )
 
 
+def _migration_5(connection: sqlite3.Connection) -> None:
+    """Allow several independent recordings from one device on one UTC day."""
+
+    connection.executescript(
+        """
+        CREATE TABLE source_recordings (
+            id TEXT PRIMARY KEY,
+            source_log_id TEXT NOT NULL REFERENCES source_logs(id) ON DELETE CASCADE,
+            sequence_no INTEGER NOT NULL CHECK (sequence_no >= 1),
+            original_filename TEXT NOT NULL,
+            started_at_utc TEXT,
+            ended_at_utc TEXT,
+            created_at_utc TEXT NOT NULL,
+            updated_at_utc TEXT NOT NULL,
+            UNIQUE (source_log_id, sequence_no)
+        );
+
+        CREATE INDEX source_recordings_log_time
+            ON source_recordings(source_log_id, started_at_utc, ended_at_utc);
+        """
+    )
+    revision_columns = {
+        row[1] for row in connection.execute(
+            "PRAGMA table_info(source_log_revisions)"
+        )
+    }
+    if "recording_id" not in revision_columns:
+        connection.execute(
+            "ALTER TABLE source_log_revisions "
+            "ADD COLUMN recording_id TEXT REFERENCES source_recordings(id)"
+        )
+    segment_columns = {
+        row[1] for row in connection.execute(
+            "PRAGMA table_info(measurement_segments)"
+        )
+    }
+    if "recording_id" not in segment_columns:
+        connection.execute(
+            "ALTER TABLE measurement_segments "
+            "ADD COLUMN recording_id TEXT REFERENCES source_recordings(id)"
+        )
+
+    now = utc_now_text()
+    source_rows = connection.execute(
+        "SELECT id, original_filename, created_at_utc, updated_at_utc "
+        "FROM source_logs"
+    ).fetchall()
+    for source in source_rows:
+        recording_id = "legacy-" + source[0]
+        bounds = connection.execute(
+            """
+            SELECT MIN(started_at_utc), MAX(ended_at_utc)
+            FROM source_log_revisions WHERE source_log_id = ?
+            """,
+            (source[0],),
+        ).fetchone()
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO source_recordings
+            (id, source_log_id, sequence_no, original_filename,
+             started_at_utc, ended_at_utc, created_at_utc, updated_at_utc)
+            VALUES (?, ?, 1, ?, ?, ?, ?, ?)
+            """,
+            (
+                recording_id, source[0], source[1], bounds[0], bounds[1],
+                source[2] or now, source[3] or now,
+            ),
+        )
+        connection.execute(
+            "UPDATE source_log_revisions SET recording_id = ? "
+            "WHERE source_log_id = ? AND recording_id IS NULL",
+            (recording_id, source[0]),
+        )
+        connection.execute(
+            """
+            UPDATE measurement_segments SET recording_id = COALESCE(
+                (SELECT r.recording_id
+                 FROM segment_proposals p
+                 JOIN source_log_revisions r ON r.id = p.revision_id
+                 WHERE p.resolved_segment_id = measurement_segments.id
+                 LIMIT 1),
+                ?
+            )
+            WHERE source_log_id = ? AND recording_id IS NULL
+            """,
+            (recording_id, source[0]),
+        )
+
+    connection.execute("DROP INDEX IF EXISTS one_current_revision_per_log")
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX one_current_revision_per_recording
+        ON source_log_revisions(recording_id) WHERE is_current = 1
+        """
+    )
+    connection.execute(
+        "CREATE INDEX source_log_revisions_recording "
+        "ON source_log_revisions(recording_id, imported_at_utc)"
+    )
+    connection.execute(
+        """
+        INSERT OR IGNORE INTO gpkg_contents
+        (table_name, data_type, identifier, description, srs_id)
+        VALUES ('source_recordings', 'attributes', 'Independent recordings',
+                'Separate card recordings within one device day', NULL)
+        """
+    )
+    connection.execute(
+        "INSERT INTO crs_schema_migrations(version, applied_at_utc) VALUES (?, ?)",
+        (5, now),
+    )
+
+
 def migrate(connection: sqlite3.Connection) -> int:
     """Initialize or upgrade a CzechRad Studio GeoPackage transactionally."""
 
@@ -339,6 +452,9 @@ def migrate(connection: sqlite3.Connection) -> int:
         if current < 4:
             _migration_4(connection)
             current = 4
+        if current < 5:
+            _migration_5(connection)
+            current = 5
         if current > SCHEMA_VERSION:
             raise RuntimeError(
                 "Databáze byla vytvořena novější verzí CzechRad Studia "
