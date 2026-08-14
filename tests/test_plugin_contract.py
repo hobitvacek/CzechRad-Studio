@@ -145,6 +145,22 @@ class PluginContractTest(unittest.TestCase):
         self.assertIn("list_mission_recordings", manual_source)
         self.assertIn("recording_id=recording.recording_id", manual_source)
 
+    def test_map_point_segment_selection_is_available(self):
+        plugin_source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
+        dialog_source = (PLUGIN / "ui/saved_segments_dialog.py").read_text(
+            encoding="utf-8"
+        )
+        repository_source = (PLUGIN / "database/repository.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("QgsMapToolEmitPoint", plugin_source)
+        self.assertIn("QgsCoordinateTransform", plugin_source)
+        self.assertIn("Nový úsek z mapy…", dialog_source)
+        self.assertIn("map_segment_requested", dialog_source)
+        self.assertIn("nearest_mission_measurement", repository_source)
+        self.assertIn("recording_id=first.recording_id", plugin_source)
+
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
 

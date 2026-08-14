@@ -501,6 +501,33 @@ class GeoPackageRepositoryTest(unittest.TestCase):
                 recording_id=selected.recording_id,
             )
 
+    def test_map_click_snaps_to_nearest_current_measurement(self):
+        mission = self.repository.create_mission("Výběr z mapy")
+        analysis = analyze_log_files(self.track)
+        stored = self.repository.store_import(
+            analysis, self.track, mission_id=mission.id
+        )
+        target = analysis.geometry_measurements[0]
+
+        nearest = self.repository.nearest_mission_measurement(
+            mission.id,
+            target.longitude + 0.000001,
+            target.latitude + 0.000001,
+        )
+
+        self.assertEqual(stored.source_log_id, nearest.source_log_id)
+        self.assertEqual(stored.recording_id, nearest.recording_id)
+        self.assertEqual(target.timestamp, nearest.measured_at)
+        self.assertLess(nearest.distance_m, 1.0)
+
+        filtered = self.repository.nearest_mission_measurement(
+            mission.id,
+            target.longitude,
+            target.latitude,
+            recording_id=stored.recording_id,
+        )
+        self.assertEqual(stored.recording_id, filtered.recording_id)
+
     def test_tracks_mission_range_and_stores_no_raw_gps_lines(self):
         mission = self.repository.create_mission("Audit")
         analysis = analyze_log_files(self.track)

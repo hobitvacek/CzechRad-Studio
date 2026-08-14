@@ -6,7 +6,7 @@ Projekt navazuje na [Radiation ToolBox Plugin](https://gitlab.com/opengeolabs/ra
 
 ## Stav projektu
 
-Aktuální experimentální verze `0.5.4` obsahuje použitelný import, monitoring, projektovou databázi, editor měřicích úseků a společnou podporu Qt5/Qt6:
+Aktuální experimentální verze `0.5.5` obsahuje použitelný import, monitoring, projektovou databázi, editor měřicích úseků a společnou podporu Qt5/Qt6:
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
@@ -31,11 +31,13 @@ Aktuální experimentální verze `0.5.4` obsahuje použitelný import, monitori
 - samostatný přehled uložených úseků s opravou metadat a zvýrazněním v mapě;
 - ruční vytvoření úseku podle času v konkrétním LOGu, včetně rozlišení
   několika karet se stejným denním názvem;
+- ruční výběr začátku a konce úseku dvěma kliknutími do mapy; druhá hranice
+  se bezpečně připne pouze ke stejnému záznamu jako první;
 - modulární adresáře pro import, monitoring, databázi, mise, úseky a export SÚRO;
 - počáteční architektura, vize a roadmapa;
 - základní testy kontraktu pluginu bez závislosti na QGIS.
 
-Ruční výběr hranic kliknutím do mapy a export pro SÚRO zatím nejsou implementovány.
+Export pro SÚRO zatím není implementován.
 
 ## Instalace vývojové verze
 
@@ -54,6 +56,8 @@ Měřicí úseky…**. Potvrzení nikdy neupravuje původní LOG.
 Potvrzené úseky lze později opravit přes **CzechRad Studio → Uložené úseky…**.
 Ve stejném okně lze tlačítkem **Nový úsek podle času…** rozdělit
 denní LOG na vlastní trasy bez změny zdrojových dat.
+Tlačítko **Nový úsek z mapy…** aktivuje výběr dvou bodů. Zelený bod označí
+začátek, červený konec a následný formulář umožní doplnit metadata úseku.
 
 ## Dokumentace
 

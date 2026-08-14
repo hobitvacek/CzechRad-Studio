@@ -29,7 +29,16 @@ from .segments_dialog import SEGMENT_TYPES
 class ManualSegmentDialog(QDialog):
     """Small QGIS 3/4 compatible editor for one manual time segment."""
 
-    def __init__(self, database_path, mission_id: str, parent=None):
+    def __init__(
+        self,
+        database_path,
+        mission_id: str,
+        parent=None,
+        *,
+        initial_recording_id: str | None = None,
+        initial_start: datetime | None = None,
+        initial_end: datetime | None = None,
+    ):
         super().__init__(parent)
         self.repository = GeoPackageRepository(database_path)
         self.mission_id = mission_id
@@ -117,7 +126,30 @@ class ManualSegmentDialog(QDialog):
 
         create_button.setEnabled(bool(self.recordings))
         if self.recordings:
-            self._recording_changed(0)
+            initial_index = 0
+            if initial_recording_id is not None:
+                initial_index = next(
+                    (
+                        index
+                        for index, recording in enumerate(self.recordings)
+                        if recording.recording_id == initial_recording_id
+                    ),
+                    0,
+                )
+            self.recording_combo.setCurrentIndex(initial_index)
+            self._recording_changed(initial_index)
+            if initial_start is not None:
+                self.start_time.setTime(
+                    QTime(
+                        initial_start.hour,
+                        initial_start.minute,
+                        initial_start.second,
+                    )
+                )
+            if initial_end is not None:
+                self.end_time.setTime(
+                    QTime(initial_end.hour, initial_end.minute, initial_end.second)
+                )
         else:
             self.range_label.setText(
                 "Aktivní mise neobsahuje žádné načtené měření."

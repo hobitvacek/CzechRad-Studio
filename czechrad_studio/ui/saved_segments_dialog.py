@@ -36,6 +36,7 @@ class SavedSegmentsDialog(QDialog):
     """Non-blocking list and metadata editor for one mission's segments."""
 
     segment_focus_requested = pyqtSignal(object)
+    map_segment_requested = pyqtSignal()
 
     def __init__(self, database_path, mission_id: str, parent=None):
         super().__init__(parent)
@@ -99,6 +100,8 @@ class SavedSegmentsDialog(QDialog):
 
         self.new_button = QPushButton("Nový úsek podle času…", self)
         self.new_button.clicked.connect(self._new_segment)
+        self.map_button = QPushButton("Nový úsek z mapy…", self)
+        self.map_button.clicked.connect(self.map_segment_requested.emit)
         self.focus_button = QPushButton("Ukázat v mapě", self)
         self.focus_button.clicked.connect(self._focus)
         self.save_button = QPushButton("Uložit změny", self)
@@ -107,6 +110,7 @@ class SavedSegmentsDialog(QDialog):
         close_button.clicked.connect(self.accept)
         buttons = QHBoxLayout()
         buttons.addWidget(self.new_button)
+        buttons.addWidget(self.map_button)
         buttons.addWidget(self.focus_button)
         buttons.addWidget(self.save_button)
         buttons.addStretch(1)
@@ -152,9 +156,11 @@ class SavedSegmentsDialog(QDialog):
             else "Aktivní mise zatím nemá žádné potvrzené úseky."
         )
         enabled = bool(self.segments)
-        self.new_button.setEnabled(
-            bool(self.repository.list_mission_recordings(self.mission_id))
+        has_recordings = bool(
+            self.repository.list_mission_recordings(self.mission_id)
         )
+        self.new_button.setEnabled(has_recordings)
+        self.map_button.setEnabled(has_recordings)
         self.focus_button.setEnabled(enabled)
         self.save_button.setEnabled(enabled)
         if enabled:
@@ -174,6 +180,14 @@ class SavedSegmentsDialog(QDialog):
         self._reload(segment.id if segment is not None else None)
         if segment is not None:
             self.segment_focus_requested.emit(segment)
+
+    def add_created_segment(self, segment):
+        """Refresh the list after a map-selected segment was created."""
+
+        if segment is None:
+            return
+        self._reload(segment.id)
+        self.segment_focus_requested.emit(segment)
 
     def _set_type(self, segment_type: SegmentType):
         for index in range(self.type_combo.count()):
