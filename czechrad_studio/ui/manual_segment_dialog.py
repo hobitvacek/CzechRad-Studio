@@ -36,16 +36,16 @@ class ManualSegmentDialog(QDialog):
         self.recordings = self.repository.list_mission_recordings(mission_id)
         self.created_segment = None
 
-        self.setWindowTitle("CzechRad Studio - novì £sek podle Ÿasu")
+        self.setWindowTitle("CzechRad Studio – nový úsek podle času")
         self.resize(620, 510)
 
         self.recording_combo = QComboBox(self)
         for recording in self.recordings:
             self.recording_combo.addItem(
                 (
-                    f"{recording.logical_date} - {recording.source_name} - "
-                    f"{recording.start:%H:%M:%S}-{recording.end:%H:%M:%S} "
-                    f"({recording.measurement_count} z znam…)"
+                    f"{recording.logical_date} – {recording.source_name} – "
+                    f"{recording.start:%H:%M:%S}–{recording.end:%H:%M:%S} "
+                    f"({recording.measurement_count} záznamů)"
                 )
             )
         self.recording_combo.currentIndexChanged.connect(
@@ -61,7 +61,7 @@ class ManualSegmentDialog(QDialog):
         for label, value in SEGMENT_TYPES:
             self.type_combo.addItem(label, value.value)
         self.title_edit = QLineEdit(self)
-        self.title_edit.setPlaceholderText("Napý¡klad pØç¡ trasa centrem")
+        self.title_edit.setPlaceholderText("Například pěší trasa centrem")
         self.height_spin = QDoubleSpinBox(self)
         self.height_spin.setRange(-1.0, 10.0)
         self.height_spin.setDecimals(2)
@@ -71,33 +71,33 @@ class ManualSegmentDialog(QDialog):
         self.height_spin.setValue(-1.0)
         self.orientation_combo = QComboBox(self)
         self.orientation_combo.addItems(
-            ("", "dol…", "nahoru", "dopýedu", "dozadu", "doleva", "doprava")
+            ("", "dolů", "nahoru", "dopředu", "dozadu", "doleva", "doprava")
         )
         self.route_edit = QLineEdit(self)
-        self.route_edit.setPlaceholderText("M¡sto nebo struŸnì popis trasy")
+        self.route_edit.setPlaceholderText("Místo nebo stručný popis trasy")
         self.notes_edit = QTextEdit(self)
         self.notes_edit.setMaximumHeight(85)
-        self.suro_check = QCheckBox("Zahrnout do pý¡pravy pro SéRO", self)
+        self.suro_check = QCheckBox("Zahrnout do přípravy pro SÚRO", self)
         self.suro_check.setChecked(True)
         self.range_label = QLabel(self)
         self.range_label.setWordWrap(True)
 
         form = QFormLayout()
-        form.addRow("MØýen¡:", self.recording_combo)
-        form.addRow("ZaŸ tek (UTC):", self.start_time)
+        form.addRow("Měření:", self.recording_combo)
+        form.addRow("Začátek (UTC):", self.start_time)
         form.addRow("Konec (UTC):", self.end_time)
-        form.addRow("Dostupnì rozsah:", self.range_label)
-        form.addRow("Typ £seku:", self.type_combo)
-        form.addRow("N zev:", self.title_edit)
-        form.addRow("Vìçka detektoru:", self.height_spin)
+        form.addRow("Dostupný rozsah:", self.range_label)
+        form.addRow("Typ úseku:", self.type_combo)
+        form.addRow("Název:", self.title_edit)
+        form.addRow("Výška detektoru:", self.height_spin)
         form.addRow("Orientace detektoru:", self.orientation_combo)
         form.addRow("Popis trasy:", self.route_edit)
-        form.addRow("Pozn mka:", self.notes_edit)
+        form.addRow("Poznámka:", self.notes_edit)
         form.addRow("", self.suro_check)
 
-        create_button = QPushButton("Vytvoýit £sek", self)
+        create_button = QPushButton("Vytvořit úsek", self)
         create_button.clicked.connect(self._create)
-        cancel_button = QPushButton("Zruçit", self)
+        cancel_button = QPushButton("Zrušit", self)
         cancel_button.clicked.connect(self.reject)
         buttons = QHBoxLayout()
         buttons.addStretch(1)
@@ -107,8 +107,8 @@ class ManualSegmentDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(
             QLabel(
-                "Vyber konkr‚tn¡ z znam a nastav hranice £seku podle Ÿasu "
-                "v LOGu. P…vodn¡ soubor ani namØýen‚ body se nemØn¡.",
+                "Vyber konkrétní záznam a nastav hranice úseku podle času "
+                "v LOGu. Původní soubor ani naměřené body se nemění.",
                 self,
             )
         )
@@ -120,7 +120,7 @@ class ManualSegmentDialog(QDialog):
             self._recording_changed(0)
         else:
             self.range_label.setText(
-                "Aktivn¡ mise neobsahuje § dn‚ naŸten‚ mØýen¡."
+                "Aktivní mise neobsahuje žádné načtené měření."
             )
 
     def _recording_changed(self, index: int):
@@ -134,7 +134,7 @@ class ManualSegmentDialog(QDialog):
             QTime(recording.end.hour, recording.end.minute, recording.end.second)
         )
         self.range_label.setText(
-            f"{recording.start.isoformat()} a§ {recording.end.isoformat()}"
+            f"{recording.start.isoformat()} až {recording.end.isoformat()}"
         )
 
     @staticmethod

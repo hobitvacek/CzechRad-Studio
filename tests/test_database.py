@@ -129,8 +129,8 @@ class GeoPackageRepositoryTest(unittest.TestCase):
                  detector_height_m, detector_orientation, route_description,
                  notes, created_at_utc, updated_at_utc)
                 VALUES ('segment-1', 'log-1', NULL, ?, ?, 'walking',
-                        'Starç¡ £sek', 'confirmed', 1, 1.0, 'dol…',
-                        'Testovac¡ trasa', '', ?, ?)
+                        'Starší úsek', 'confirmed', 1, 1.0, 'dolů',
+                        'Testovací trasa', '', ?, ?)
                 """,
                 (now, "2026-07-17T18:00:20+00:00", now, now),
             )
@@ -182,15 +182,15 @@ class GeoPackageRepositoryTest(unittest.TestCase):
 
     def test_creates_and_lists_missions(self):
         mission = self.repository.create_mission(
-            "V¡kend v OstravØ", "PØç¡ mØýen¡ ve v¡ce denn¡ch LOGech"
+            "Víkend v Ostravě", "Pěší měření ve více denních LOGech"
         )
 
-        self.assertEqual("V¡kend v OstravØ", mission.name)
+        self.assertEqual("Víkend v Ostravě", mission.name)
         self.assertEqual("active", mission.status)
         self.assertEqual((mission,), self.repository.list_missions())
 
     def test_user_segment_survives_new_log_revision(self):
-        mission = self.repository.create_mission("éseky")
+        mission = self.repository.create_mission("Úseky")
         analysis = analyze_log_files(self.track)
         stored = self.repository.store_import(
             analysis, self.track, mission_id=mission.id
@@ -198,7 +198,7 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         times = [item.timestamp for item in analysis.track.measurements]
         segment = self.repository.create_segment(
             stored.source_log_id, min(times), max(times), mission_id=mission.id,
-            segment_type=SegmentType.WALKING, title="PØç¡ Ÿ st",
+            segment_type=SegmentType.WALKING, title="Pěší část",
         )
 
         with self.track.open("a", encoding="utf-8") as handle:
@@ -261,7 +261,7 @@ class GeoPackageRepositoryTest(unittest.TestCase):
             ) + "\n",
             encoding="utf-8",
         )
-        mission = self.repository.create_mission("Kontrola £sek…")
+        mission = self.repository.create_mission("Kontrola úseků")
         stored = self.repository.store_import(
             analyze_log_files(stationary_track),
             stationary_track,
@@ -282,17 +282,17 @@ class GeoPackageRepositoryTest(unittest.TestCase):
             proposals[0].id,
             mission.id,
             segment_type=SegmentType.STATIONARY,
-            title="Kontroln¡ mØýen¡",
+            title="Kontrolní měření",
             detector_height_m=1.0,
-            detector_orientation="dol…",
-            route_description="N mØst¡",
-            notes="OvØýeno u§ivatelem",
+            detector_orientation="dolů",
+            route_description="Náměstí",
+            notes="Ověřeno uživatelem",
         )
 
         self.assertEqual(stored.source_log_id, segment.source_log_id)
         self.assertEqual("confirmed", segment.status)
         self.assertEqual(1.0, segment.detector_height_m)
-        self.assertEqual("dol…", segment.detector_orientation)
+        self.assertEqual("dolů", segment.detector_orientation)
         self.assertEqual((segment,), self.repository.list_mission_segments(mission.id))
         self.assertEqual(
             37, len(self.repository.list_segment_positions(segment.id))
@@ -301,18 +301,18 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         updated = self.repository.update_segment(
             segment.id,
             segment_type=SegmentType.WALKING,
-            title="Opravenì n zev",
+            title="Opravený název",
             include_in_suro=False,
             detector_height_m=0.8,
-            detector_orientation="dopýedu",
-            route_description="Opraven  trasa",
+            detector_orientation="dopředu",
+            route_description="Opravená trasa",
             notes="Upraveno po kontrole mapy",
         )
         self.assertEqual(SegmentType.WALKING, updated.segment_type)
-        self.assertEqual("Opravenì n zev", updated.title)
+        self.assertEqual("Opravený název", updated.title)
         self.assertFalse(updated.include_in_suro)
         self.assertEqual(0.8, updated.detector_height_m)
-        self.assertEqual("Opraven  trasa", updated.route_description)
+        self.assertEqual("Opravená trasa", updated.route_description)
         self.assertEqual((), self.repository.list_mission_segment_proposals(mission.id))
         all_proposals = self.repository.list_mission_segment_proposals(
             mission.id, pending_only=False
@@ -320,7 +320,7 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual("accepted", all_proposals[0].status)
 
     def test_pending_proposal_can_be_dismissed(self):
-        mission = self.repository.create_mission("PýeskoŸen¡")
+        mission = self.repository.create_mission("Přeskočení")
         gap_track = self.root / "07960724.LOG"
         payloads = (
             "CZRA1,TEST,2026-07-24T08:00:00Z,40,3,100,A,"
@@ -349,7 +349,7 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual("dismissed", reviewed[0].status)
 
     def test_same_import_is_not_duplicated_and_changed_file_is_revision(self):
-        mission = self.repository.create_mission("Testovac¡ mise")
+        mission = self.repository.create_mission("Testovací mise")
         analysis = analyze_log_files(self.track)
 
         first = self.repository.store_import(
@@ -379,7 +379,7 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual(5, self.repository.current_measurement_count(first.source_log_id))
 
     def test_independent_same_day_recordings_keep_separate_current_revisions(self):
-        mission = self.repository.create_mission("DvŲ karty v jednom dni")
+        mission = self.repository.create_mission("Dvě karty v jednom dni")
         first = self.repository.store_import(
             analyze_log_files(self.track), self.track, mission_id=mission.id
         )
@@ -445,7 +445,7 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         self.assertEqual(2, current_count)
 
     def test_manual_segment_targets_selected_same_day_recording(self):
-        mission = self.repository.create_mission("RuŸn¡ rozdØlen¡")
+        mission = self.repository.create_mission("Ruční rozdělení")
         first = self.repository.store_import(
             analyze_log_files(self.track), self.track, mission_id=mission.id
         )
@@ -477,7 +477,7 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         selected = next(
             item for item in recordings if item.recording_id == second.recording_id
         )
-        self.assertIn("mØýen¡ 2", selected.source_name)
+        self.assertIn("měření 2", selected.source_name)
 
         segment = self.repository.create_segment(
             first.source_log_id,
@@ -486,12 +486,12 @@ class GeoPackageRepositoryTest(unittest.TestCase):
             mission_id=mission.id,
             recording_id=selected.recording_id,
             segment_type=SegmentType.WALKING,
-            title="Druh  karta",
+            title="Druhá karta",
             status="confirmed",
         )
 
-        self.assertEqual("Druh  karta", segment.title)
-        self.assertIn("mØýen¡ 2", segment.source_name)
+        self.assertEqual("Druhá karta", segment.title)
+        self.assertIn("měření 2", segment.source_name)
         with self.assertRaises(ValueError):
             self.repository.create_segment(
                 first.source_log_id,
