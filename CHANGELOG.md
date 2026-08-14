@@ -1,6 +1,6 @@
 # Changelog
 
-Vìznamn‚ zmØny budou dokumentov ny v tomto souboru. Projekt pou§¡v  [Semantic Versioning](https://semver.org/) a form t vych z¡ z [Keep a Changelog](https://keepachangelog.com/).
+Významné změny budou dokumentovány v tomto souboru. Projekt používá [Semantic Versioning](https://semver.org/) a formát vychází z [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
@@ -15,7 +15,7 @@ Vìznamn‚ zmØny budou dokumentov ny v tomto souboru. Projekt pou§¡v  [Sem
 - Kept each recording's NOGPS correlation, current revision, proposals and
   saved-segment map positions isolated while allowing the recordings to share
   one daily mission.
-- Added collision-safe display labels such as `07960808.LOG (mØýen¡ 2)` without
+- Added collision-safe display labels such as `07960808.LOG (měření 2)` without
   renaming or modifying the original source files.
 - Added an active-mission overview of saved measurement segments with metadata
   editing and map focus based on the current LOG revision.
@@ -28,7 +28,7 @@ Vìznamn‚ zmØny budou dokumentov ny v tomto souboru. Projekt pou§¡v  [Sem
   the map after zooming.
 - Added a QGIS 3/4 segment-review dialog for proposals in the active mission.
 - Added confirmation of stop and GPS-loss proposals with movement type, title,
-  detector height and orientation, route description, notes and SéRO inclusion.
+  detector height and orientation, route description, notes and SÚRO inclusion.
 - Added proposal review states so accepted or intentionally skipped suggestions
   do not repeatedly return after reopening the project.
 - Suppressed recording-gap proposals when the same interval is already
@@ -44,11 +44,11 @@ Vìznamn‚ zmØny budou dokumentov ny v tomto souboru. Projekt pou§¡v  [Sem
 - Fixed QGIS 3.34 / Qt 5 field creation on Linux by selecting QVariant field
   types from the actual Qt major version instead of the presence of a scoped
   QMetaType enum.
-- Corrected the default uSv/h map mode to use the device's latest five-second
+- Corrected the default µSv/h map mode to use the device's latest five-second
   count, while retaining a separate smoothed one-minute CPM mode.
 - Added explicit device detection for CzechRad `CZRA1`, legacy CzechRad
   `CZRDD`, and Safecast bGeigie Nano `BNRDD` records.
-- Added CzechRad (328.5 CPM/uSv/h) and Safecast (334 CPM/uSv/h) calibration
+- Added CzechRad (328.5 CPM/µSv/h) and Safecast (334 CPM/µSv/h) calibration
   profiles to map layers, stop summaries, and GeoPackage device metadata.
 
 ### Added
@@ -73,16 +73,16 @@ Vìznamn‚ zmØny budou dokumentov ny v tomto souboru. Projekt pou§¡v  [Sem
 
 - Read-only monitoring of a configured card or LOG folder every five seconds.
 - Import only after two unchanged file observations.
-- SHA-256 deduplication, verified archive copies and collision numbering (`-1`, `-2`, ).
+- SHA-256 deduplication, verified archive copies and collision numbering (`-1`, `-2`, …).
 - Automatic replacement of an in-session map layer after a changed daily LOG is safely archived.
 - Persistent QGIS settings for source folder, archive folder and monitoring state.
 
 - Comparison of prolonged stops with the nearby route radiation baseline.
-- Highlighting only stops elevated by at least 30% and 0.03 uSv/h as possible stationary measurements.
+- Highlighting only stops elevated by at least 30% and 0.03 µSv/h as possible stationary measurements.
 - Preservation of all points in an elevated stop while ordinary GPS-drift clusters remain eligible for map-only aggregation.
 
-- CzechRad conversion from CPM and five-second counts to uSv/h using the documented 328.5 CPM calibration.
-- Neutral five-band map renderer switchable between uSv/h and CPM whose classes appear in the QGIS layer legend.
+- CzechRad conversion from CPM and five-second counts to µSv/h using the documented 328.5 CPM calibration.
+- Neutral five-band map renderer switchable between µSv/h and CPM whose classes appear in the QGIS layer legend.
 - Optional map-only aggregation of stable prolonged stops into one average point.
 - Conservative preservation of all stop points when a sudden or sustained radiation increase is detected.
 
@@ -107,17 +107,17 @@ Vìznamn‚ zmØny budou dokumentov ny v tomto souboru. Projekt pou§¡v  [Sem
 
 ### Planned
 
-- Podpora `NOGPS*.LOG` jako mØýen¡ bez polohy, vŸetnØ vnitýn¡ch £sek… a ruŸn¡ho pýiýazen¡ m¡sta.
-- Import jednoho denn¡ho LOG souboru.
-- Monitoring slo§ky a aktualizace zmØnØn‚ho souboru bez duplicit.
-- Volitelnì automatickì import po vlo§en¡ nastaven‚ karty, bezpeŸn  archivn¡ kopie a Ÿ¡slov n¡ koliz¡ n zv….
+- Podpora `NOGPS*.LOG` jako měření bez polohy, včetně vnitřních úseků a ručního přiřazení místa.
+- Import jednoho denního LOG souboru.
+- Monitoring složky a aktualizace změněného souboru bez duplicit.
+- Volitelný automatický import po vložení nastavené karty, bezpečná archivní kopie a číslování kolizí názvů.
 
 ## [0.1.0] - 2026-07-17
 
 ### Added
 
-- Z kladn¡ kostra QGIS pluginu.
-- Modul rn¡ adres ýov  struktura.
+- Základní kostra QGIS pluginu.
+- Modulární adresářová struktura.
 - Dokumenty VISION, ARCHITECTURE, ROADMAP a SURO_EXPORT.
-- Z kladn¡ testy kontraktu pluginu.
-- Kontrola a sjednocen¡ licenŸn¡ch informac¡.
+- Základní testy kontraktu pluginu.
+- Kontrola a sjednocení licenčních informací.

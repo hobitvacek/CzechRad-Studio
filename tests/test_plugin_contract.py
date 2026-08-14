@@ -109,7 +109,7 @@ class PluginContractTest(unittest.TestCase):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
 
         self.assertIn("SegmentsDialog", source)
-        self.assertIn("MØýic¡ £seky", source)
+        self.assertIn("Měřicí úseky…", source)
         self.assertIn("proposal_focus_requested", source)
         self.assertIn("zoomToActiveLayer()", source)
         self.assertIn("mapCanvas().refresh()", source)
@@ -127,7 +127,7 @@ class PluginContractTest(unittest.TestCase):
         )
 
         self.assertIn("SavedSegmentsDialog", source)
-        self.assertIn("Ulo§en‚ £seky", source)
+        self.assertIn("Uložené úseky…", source)
         self.assertIn("list_segment_positions", source)
         self.assertIn("update_segment", dialog_source)
         self.assertIn("segment_focus_requested", dialog_source)
@@ -141,7 +141,7 @@ class PluginContractTest(unittest.TestCase):
         )
 
         self.assertIn("ManualSegmentDialog", dialog_source)
-        self.assertIn("Nově Łsek podle źasu", dialog_source)
+        self.assertIn("Nový úsek podle času", dialog_source)
         self.assertIn("list_mission_recordings", manual_source)
         self.assertIn("recording_id=recording.recording_id", manual_source)
 

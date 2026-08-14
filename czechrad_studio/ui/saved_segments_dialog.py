@@ -43,14 +43,14 @@ class SavedSegmentsDialog(QDialog):
         self.mission_id = mission_id
         self.segments = ()
 
-        self.setWindowTitle("CzechRad Studio - ulo§en‚ £seky")
+        self.setWindowTitle("CzechRad Studio – uložené úseky")
         self.setModal(False)
         self.resize(980, 650)
 
         self.summary_label = QLabel(self)
         self.table = QTableWidget(0, 7, self)
         self.table.setHorizontalHeaderLabels(
-            ("Datum", "Od", "Do", "Typ", "N zev", "SéRO", "Soubor")
+            ("Datum", "Od", "Do", "Typ", "Název", "SÚRO", "Soubor")
         )
         self.table.setSelectionMode(
             _enum(QAbstractItemView, "SelectionMode", "SingleSelection")
@@ -79,31 +79,31 @@ class SavedSegmentsDialog(QDialog):
         self.height_spin.setSpecialValueText("neuvedeno")
         self.orientation_combo = QComboBox(self)
         self.orientation_combo.addItems(
-            ("", "dol…", "nahoru", "dopýedu", "dozadu", "doleva", "doprava")
+            ("", "dolů", "nahoru", "dopředu", "dozadu", "doleva", "doprava")
         )
         self.route_edit = QLineEdit(self)
         self.notes_edit = QTextEdit(self)
         self.notes_edit.setMaximumHeight(85)
-        self.suro_check = QCheckBox("Zahrnout do pý¡pravy pro SéRO", self)
+        self.suro_check = QCheckBox("Zahrnout do přípravy pro SÚRO", self)
         self.status_label = QLabel(self)
         self.status_label.setWordWrap(True)
 
         form = QFormLayout()
-        form.addRow("Typ £seku:", self.type_combo)
-        form.addRow("N zev:", self.title_edit)
-        form.addRow("Vìçka detektoru:", self.height_spin)
+        form.addRow("Typ úseku:", self.type_combo)
+        form.addRow("Název:", self.title_edit)
+        form.addRow("Výška detektoru:", self.height_spin)
         form.addRow("Orientace detektoru:", self.orientation_combo)
         form.addRow("Popis trasy:", self.route_edit)
-        form.addRow("Pozn mka:", self.notes_edit)
+        form.addRow("Poznámka:", self.notes_edit)
         form.addRow("", self.suro_check)
 
-        self.new_button = QPushButton("Novì £sek podle Ÿasu", self)
+        self.new_button = QPushButton("Nový úsek podle času…", self)
         self.new_button.clicked.connect(self._new_segment)
-        self.focus_button = QPushButton("Uk zat v mapØ", self)
+        self.focus_button = QPushButton("Ukázat v mapě", self)
         self.focus_button.clicked.connect(self._focus)
-        self.save_button = QPushButton("Ulo§it zmØny", self)
+        self.save_button = QPushButton("Uložit změny", self)
         self.save_button.clicked.connect(self._save)
-        close_button = QPushButton("Zavý¡t", self)
+        close_button = QPushButton("Zavřít", self)
         close_button.clicked.connect(self.accept)
         buttons = QHBoxLayout()
         buttons.addWidget(self.new_button)
@@ -115,8 +115,8 @@ class SavedSegmentsDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(
             QLabel(
-                "Zde lze opravit metadata potvrzenìch £sek…. ¬asov‚ hranice "
-                "a p…vodn¡ LOG se touto obrazovkou nemØn¡.",
+                "Zde lze opravit metadata potvrzených úseků. Časové hranice "
+                "a původní LOG se touto obrazovkou nemění.",
                 self,
             )
         )
@@ -147,9 +147,9 @@ class SavedSegmentsDialog(QDialog):
             for column, value in enumerate(values):
                 self.table.setItem(row_index, column, QTableWidgetItem(value))
         self.summary_label.setText(
-            f"Ulo§en‚ £seky: {len(self.segments)}."
+            f"Uložené úseky: {len(self.segments)}."
             if self.segments
-            else "Aktivn¡ mise zat¡m nem  § dn‚ potvrzen‚ £seky."
+            else "Aktivní mise zatím nemá žádné potvrzené úseky."
         )
         enabled = bool(self.segments)
         self.new_button.setEnabled(
@@ -226,5 +226,5 @@ class SavedSegmentsDialog(QDialog):
             QMessageBox.critical(self, "CzechRad Studio", str(exc))
             return
         self._reload(segment.id)
-        self.status_label.setText("ZmØny byly ulo§eny.")
+        self.status_label.setText("Změny byly uloženy.")
 
