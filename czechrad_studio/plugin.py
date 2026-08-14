@@ -9,6 +9,8 @@ from pathlib import Path
 from qgis.PyQt.QtCore import QSettings, QTimer
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
     QgsFeature,
     QgsGeometry,
     QgsMarkerSymbol,
@@ -16,6 +18,7 @@ from qgis.core import (
     QgsProject,
     QgsVectorLayer,
 )
+from qgis.gui import QgsMapToolEmitPoint
 
 from .core.constants import PLUGIN_NAME
 from .database import GeoPackageRepository, ImportDisposition
@@ -25,12 +28,16 @@ from .monitoring import StableFileTracker, archive_ready_logs
 from .qt_compat import QAction, DIALOG_ACCEPTED, exec_dialog
 from .ui import (
     ImportDialog,
+    ManualSegmentDialog,
     MonitorDialog,
     ProjectDialog,
     SavedSegmentsDialog,
     SegmentsDialog,
     add_analysis_layers,
 )
+
+
+MAX_MAP_SNAP_DISTANCE_M = 500.0
 
 
 class CzechRadStudioPlugin:
@@ -54,6 +61,10 @@ class CzechRadStudioPlugin:
         self._proposal_focus_layer = None
         self._segments_dialog = None
         self._saved_segments_dialog = None
+        self._map_segment_tool = None
+        self._previous_map_tool = None
+        self._map_segment_selection = None
+        self._map_boundary_layers = []
 
     def initGui(self):  # noqa: N802 - QGIS requires this name
         self.action = QAction(PLUGIN_NAME, self.iface.mainWindow())
@@ -95,6 +106,7 @@ class CzechRadStudioPlugin:
             return
 
         self.monitor_timer.stop()
+        self._cancel_map_segment_selection()
         self._remove_proposal_focus_layer()
         if self._segments_dialog is not None:
             self._segments_dialog.close()
@@ -195,15 +207,173 @@ class CzechRadStudioPlugin:
         self._saved_segments_dialog.segment_focus_requested.connect(
             lambda segment: self._focus_saved_segment(database_path, segment)
         )
+        self._saved_segments_dialog.map_segment_requested.connect(
+            lambda: self._begin_map_segment_selection(
+                database_path, mission_id
+            )
+        )
         self._saved_segments_dialog.finished.connect(
             self._saved_segments_dialog_finished
         )
         self._saved_segments_dialog.show()
 
     def _saved_segments_dialog_finished(self, _result):
+        self._cancel_map_segment_selection()
         if self._saved_segments_dialog is not None:
             self._saved_segments_dialog.deleteLater()
             self._saved_segments_dialog = None
+
+    def _remove_map_boundary_layers(self):
+        project = QgsProject.instance()
+        for layer in self._map_boundary_layers:
+            project.removeMapLayer(layer.id())
+        self._map_boundary_layers = []
+
+    def _restore_previous_map_tool(self):
+        if self._map_segment_tool is None:
+            return
+        canvas = self.iface.mapCanvas()
+        if self._previous_map_tool is not None:
+            canvas.setMapTool(self._previous_map_tool)
+        else:
+            canvas.unsetMapTool(self._map_segment_tool)
+        self._map_segment_tool = None
+        self._previous_map_tool = None
+
+    def _cancel_map_segment_selection(self):
+        self._restore_previous_map_tool()
+        self._map_segment_selection = None
+        self._remove_map_boundary_layers()
+
+    def _begin_map_segment_selection(self, database_path, mission_id):
+        self._cancel_map_segment_selection()
+        repository = GeoPackageRepository(database_path)
+        if not repository.list_mission_recordings(mission_id):
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                "Aktivní mise nemá žádné načtené měření.",
+            )
+            return
+        canvas = self.iface.mapCanvas()
+        self._previous_map_tool = canvas.mapTool()
+        self._map_segment_tool = QgsMapToolEmitPoint(canvas)
+        self._map_segment_tool.canvasClicked.connect(
+            self._map_boundary_clicked
+        )
+        self._map_segment_selection = {
+            "database_path": database_path,
+            "mission_id": mission_id,
+            "repository": repository,
+            "first": None,
+        }
+        canvas.setMapTool(self._map_segment_tool)
+        canvas.setFocus()
+        self.iface.messageBar().pushInfo(
+            PLUGIN_NAME,
+            "Klikni v mapě na první bod úseku. Výběr se připne k "
+            "nejbližšímu platnému měření.",
+        )
+
+    def _map_point_wgs84(self, point):
+        canvas_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
+        transform = QgsCoordinateTransform(
+            canvas_crs,
+            QgsCoordinateReferenceSystem("EPSG:4326"),
+            QgsProject.instance(),
+        )
+        return transform.transform(point)
+
+    def _add_boundary_marker(self, measurement, *, first):
+        label = "začátek" if first else "konec"
+        color = "0,170,70,240" if first else "220,45,45,240"
+        layer = QgsVectorLayer(
+            "Point?crs=EPSG:4326",
+            f"CzechRad – {label} úseku",
+            "memory",
+        )
+        feature = QgsFeature()
+        feature.setGeometry(
+            QgsGeometry.fromPointXY(
+                QgsPointXY(measurement.longitude, measurement.latitude)
+            )
+        )
+        layer.dataProvider().addFeature(feature)
+        layer.updateExtents()
+        layer.renderer().setSymbol(
+            QgsMarkerSymbol.createSimple(
+                {
+                    "name": "circle",
+                    "color": color,
+                    "size": "5.0",
+                    "outline_color": "255,255,255,255",
+                    "outline_width": "0.8",
+                }
+            )
+        )
+        QgsProject.instance().addMapLayer(layer)
+        layer.triggerRepaint()
+        self._map_boundary_layers.append(layer)
+
+    def _map_boundary_clicked(self, point, _button):
+        selection = self._map_segment_selection
+        if selection is None:
+            return
+        try:
+            wgs84 = self._map_point_wgs84(point)
+            first = selection["first"]
+            nearest = selection["repository"].nearest_mission_measurement(
+                selection["mission_id"],
+                wgs84.x(),
+                wgs84.y(),
+                recording_id=(
+                    None if first is None else first.recording_id
+                ),
+            )
+        except Exception as exc:
+            self.iface.messageBar().pushWarning(PLUGIN_NAME, str(exc))
+            return
+        if nearest.distance_m > MAX_MAP_SNAP_DISTANCE_M:
+            self.iface.messageBar().pushWarning(
+                PLUGIN_NAME,
+                f"Nejbližší bod je vzdálen {nearest.distance_m:.0f} m. "
+                "Přibliž mapu a klikni blíže k trase.",
+            )
+            return
+        if first is None:
+            selection["first"] = nearest
+            self._add_boundary_marker(nearest, first=True)
+            self.iface.messageBar().pushInfo(
+                PLUGIN_NAME,
+                f"Začátek: {nearest.measured_at:%H:%M:%S} UTC, "
+                f"{nearest.source_name}. Nyní klikni na konec úseku.",
+            )
+            return
+
+        self._add_boundary_marker(nearest, first=False)
+        self._complete_map_segment_selection(first, nearest)
+
+    def _complete_map_segment_selection(self, first, second):
+        selection = self._map_segment_selection
+        if selection is None:
+            return
+        self._restore_previous_map_tool()
+        start = min(first.measured_at, second.measured_at)
+        end = max(first.measured_at, second.measured_at)
+        dialog = ManualSegmentDialog(
+            selection["database_path"],
+            selection["mission_id"],
+            self.iface.mainWindow(),
+            initial_recording_id=first.recording_id,
+            initial_start=start,
+            initial_end=end,
+        )
+        if exec_dialog(dialog) == DIALOG_ACCEPTED:
+            segment = dialog.created_segment
+            if self._saved_segments_dialog is not None:
+                self._saved_segments_dialog.add_created_segment(segment)
+        self._map_segment_selection = None
+        self._remove_map_boundary_layers()
 
     def _remove_proposal_focus_layer(self):
         if self._proposal_focus_layer is None:

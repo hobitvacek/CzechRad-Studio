@@ -41,7 +41,7 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 ## 0.5.0 – Měřicí úseky
 
 - [x] Ruční rozdělení konkrétního záznamu podle času.
-- [ ] Ruční výběr hranic úseku podle bodů v mapě.
+- [x] Ruční výběr hranic úseku podle bodů v mapě.
 - [x] Přehled a potvrzování automatických návrhů v aktivní misi.
 - [x] Zvýraznění vybraného automatického návrhu v mapě.
 - [x] Přehled, oprava metadat a mapové zvýraznění uložených úseků.

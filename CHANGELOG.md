@@ -4,6 +4,12 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Added two-click map selection for measurement-segment boundaries with
+  WGS 84 coordinate transformation and snapping to trusted stored points.
+- Locked the second map boundary to the recording selected by the first click,
+  preventing independent same-day card recordings from being mixed.
+- Added temporary green/red boundary markers and prefilled the existing segment
+  metadata form with the selected UTC time range.
 - Added manual creation of a measurement segment from a UTC time range in a
   selected current recording.
 - Kept manual segments attached to the explicitly selected card recording even

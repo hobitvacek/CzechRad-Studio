@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
+from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
 from uuid import uuid4
 
@@ -59,8 +60,43 @@ class CurrentRecording:
     measurement_count: int
 
 
+@dataclass(frozen=True)
+class NearestMeasurement:
+    """Trusted measurement selected by snapping a map click to a recording."""
+
+    source_log_id: str
+    recording_id: str
+    source_name: str
+    logical_date: str
+    measured_at: datetime
+    longitude: float
+    latitude: float
+    distance_m: float
+
+
 def _parse_datetime(value: str | None) -> datetime | None:
     return datetime.fromisoformat(value) if value else None
+
+
+def _distance_m(
+    first_longitude: float,
+    first_latitude: float,
+    second_longitude: float,
+    second_latitude: float,
+) -> float:
+    """Return great-circle distance suitable for map-click snapping."""
+
+    latitude_delta = radians(second_latitude - first_latitude)
+    longitude_delta = radians(second_longitude - first_longitude)
+    first_latitude_rad = radians(first_latitude)
+    second_latitude_rad = radians(second_latitude)
+    haversine = (
+        sin(latitude_delta / 2) ** 2
+        + cos(first_latitude_rad)
+        * cos(second_latitude_rad)
+        * sin(longitude_delta / 2) ** 2
+    )
+    return 2 * 6_371_000 * asin(sqrt(haversine))
 
 
 def _sha256_file(path: Path | None) -> str | None:
@@ -641,6 +677,86 @@ class GeoPackageRepository:
                 )
             )
         return tuple(result)
+
+    def nearest_mission_measurement(
+        self,
+        mission_id: str,
+        longitude: float,
+        latitude: float,
+        *,
+        recording_id: str | None = None,
+    ) -> NearestMeasurement:
+        """Snap a WGS 84 map position to a trusted current measurement.
+
+        The optional recording filter is used for the second boundary so two
+        clicks can never silently combine independent card recordings from
+        the same day.
+        """
+
+        parameters = [mission_id, LocationQuality.VALID.value]
+        recording_clause = ""
+        if recording_id is not None:
+            recording_clause = " AND r.recording_id = ?"
+            parameters.append(recording_id)
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                f"""
+                SELECT s.id AS source_log_id, r.recording_id,
+                       sr.sequence_no, sr.original_filename, s.logical_date,
+                       m.measured_at_utc, m.longitude, m.latitude
+                FROM mission_source_logs ms
+                JOIN source_logs s ON s.id = ms.source_log_id
+                JOIN source_recordings sr ON sr.source_log_id = s.id
+                JOIN source_log_revisions r
+                    ON r.recording_id = sr.id AND r.is_current = 1
+                JOIN measurements m ON m.revision_id = r.id
+                WHERE ms.mission_id = ?
+                  AND m.location_quality = ?
+                  AND m.longitude IS NOT NULL AND m.latitude IS NOT NULL
+                  {recording_clause}
+                """,
+                tuple(parameters),
+            ).fetchall()
+        if not rows:
+            if recording_id is None:
+                raise ValueError(
+                    "Aktivní mise nemá žádné platné body pro výběr v mapě."
+                )
+            raise ValueError(
+                "Vybrané měření nemá žádné platné body pro druhou hranici."
+            )
+
+        nearest_row = min(
+            rows,
+            key=lambda row: _distance_m(
+                longitude,
+                latitude,
+                row["longitude"],
+                row["latitude"],
+            ),
+        )
+        measured_at = _parse_datetime(nearest_row["measured_at_utc"])
+        if measured_at is None:  # The schema requires a value; keep it explicit.
+            raise ValueError("Nejbližší měření nemá platný čas UTC.")
+        source_name = nearest_row["original_filename"]
+        if nearest_row["sequence_no"] > 1:
+            source_name += f" (měření {nearest_row['sequence_no']})"
+        return NearestMeasurement(
+            source_log_id=nearest_row["source_log_id"],
+            recording_id=nearest_row["recording_id"],
+            source_name=source_name,
+            logical_date=nearest_row["logical_date"],
+            measured_at=measured_at,
+            longitude=nearest_row["longitude"],
+            latitude=nearest_row["latitude"],
+            distance_m=_distance_m(
+                longitude,
+                latitude,
+                nearest_row["longitude"],
+                nearest_row["latitude"],
+            ),
+        )
 
     @staticmethod
     def _recording_for_interval(
