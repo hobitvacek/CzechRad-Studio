@@ -1,74 +1,75 @@
 # Roadmapa
 
-Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projít automatickými testy a ručním smoke testem v podporovaném QGIS 3 i QGIS 4.
+Roadmapa popisuje z mØr, nikoli z vazn‚ term¡ny. Ka§d  verze mus¡ proj¡t automatickìmi testy a ruŸn¡m smoke testem v podporovan‚m QGIS 3 i QGIS 4.
 
-## 0.1.0 – Foundation
+## 0.1.0 - Foundation
 
-- [x] Struktura repozitáře a kostra QGIS pluginu.
-- [x] Vize, architektura, roadmapa a návrh exportu SÚRO.
-- [x] Licenční a autorské informace.
-- [x] Základní kontraktní testy.
+- [x] Struktura repozit ýe a kostra QGIS pluginu.
+- [x] Vize, architektura, roadmapa a n vrh exportu SéRO.
+- [x] LicenŸn¡ a autorsk‚ informace.
+- [x] Z kladn¡ kontraktn¡ testy.
 
-## 0.2.0 – CzechRad importer
+## 0.2.0 - CzechRad importer
 
-- [x] Specifikace a datové třídy CzechRad LOG 2.x.
-- [x] Parser bez závislosti na QGIS.
-- [x] Validace kontrolních součtů, času, GPS a číselných polí.
-- [x] Import jednoho LOGu do dočasné vrstvy.
-- [x] Anonymizovaná testovací sada.
+- [x] Specifikace a datov‚ tý¡dy CzechRad LOG 2.x.
+- [x] Parser bez z vislosti na QGIS.
+- [x] Validace kontroln¡ch souŸt…, Ÿasu, GPS a Ÿ¡selnìch pol¡.
+- [x] Import jednoho LOGu do doŸasn‚ vrstvy.
+- [x] Anonymizovan  testovac¡ sada.
 
-## 0.3.0 – Monitoring
+## 0.3.0 - Monitoring
 
-- [x] Výběr a uložení sledované složky.
-- [x] Detekce nových a změněných LOGů.
-- [x] Kontrola ustálení souboru a bezpečné opakování.
-- [x] Aktualizace bez duplicit a bez ztráty poslední platné revize.
+- [x] VìbØr a ulo§en¡ sledovan‚ slo§ky.
+- [x] Detekce novìch a zmØnØnìch LOG….
+- [x] Kontrola ust len¡ souboru a bezpeŸn‚ opakov n¡.
+- [x] Aktualizace bez duplicit a bez ztr ty posledn¡ platn‚ revize.
 
-## 0.3.1 – QGIS 3 / QGIS 4 compatibility
+## 0.3.1 - QGIS 3 / QGIS 4 compatibility
 
-- [x] Jediný kód a instalační ZIP pro QGIS 3.22+ a QGIS 4.x.
-- [x] Qt5/Qt6 kompatibilní enumy dialogů, tlačítek a typů atributů.
-- [x] Import `QAction` a spouštění dialogů nezávislé na verzi Qt.
-- [x] Zachování kompatibility se starším Pythonem používaným linuxovými sestaveními QGIS 3.
+- [x] Jedinì k¢d a instalaŸn¡ ZIP pro QGIS 3.22+ a QGIS 4.x.
+- [x] Qt5/Qt6 kompatibiln¡ enumy dialog…, tlaŸ¡tek a typ… atribut….
+- [x] Import `QAction` a spouçtØn¡ dialog… nez visl‚ na verzi Qt.
+- [x] Zachov n¡ kompatibility se starç¡m Pythonem pou§¡vanìm linuxovìmi sestaven¡mi QGIS 3.
 
-## 0.4.0 – GeoPackage a mise
+## 0.4.0 - GeoPackage a mise
 
-- [x] Verzované databázové schéma a migrace.
-- [x] Zdrojové LOGy, měření a zařízení.
-- [x] Mise složené z více denních LOGů.
-- [x] Stav importu, aktuální revize a archivace předchozích revizí.
+- [x] Verzovan‚ datab zov‚ sch‚ma a migrace.
+- [x] Zdrojov‚ LOGy, mØýen¡ a zaý¡zen¡.
+- [x] Mise slo§en‚ z v¡ce denn¡ch LOG….
+- [x] Stav importu, aktu ln¡ revize a archivace pýedchoz¡ch reviz¡.
 
-## 0.5.0 – Měřicí úseky
+## 0.5.0 - MØýic¡ £seky
 
-- [ ] Rozdělení podle času a bodů v mapě.
-- [x] Přehled a potvrzování automatických návrhů v aktivní misi.
-- [x] Zvýraznění vybraného automatického návrhu v mapě.
-- [x] Přehled, oprava metadat a mapové zvýraznění uložených úseků.
-- [x] Typ pohybu, výška, orientace a popis trasy u potvrzených návrhů.
-- [ ] Zvýraznění nezařazených nových dat.
-- [x] Databázový model návrhů a uživatelských úseků odolný vůči revizím LOGu.
-- [x] Návrhy podle delších mezer, zastavení a ztráty GPS.
-- [ ] Doplnění návrhů podle rychlosti po ověření na více přístrojích a trasách.
+- [x] RuŸn¡ rozdØlen¡ konkr‚tn¡ho z znamu podle Ÿasu.
+- [ ] RuŸn¡ vìbØr hranic £seku podle bod… v mapØ.
+- [x] Pýehled a potvrzov n¡ automatickìch n vrh… v aktivn¡ misi.
+- [x] ZvìraznØn¡ vybran‚ho automatick‚ho n vrhu v mapØ.
+- [x] Pýehled, oprava metadat a mapov‚ zvìraznØn¡ ulo§enìch £sek….
+- [x] Typ pohybu, vìçka, orientace a popis trasy u potvrzenìch n vrh….
+- [ ] ZvìraznØn¡ nezaýazenìch novìch dat.
+- [x] Datab zovì model n vrh… a u§ivatelskìch £sek… odolnì v…Ÿi reviz¡m LOGu.
+- [x] N vrhy podle delç¡ch mezer, zastaven¡ a ztr ty GPS.
+- [ ] DoplnØn¡ n vrh… podle rychlosti po ovØýen¡ na v¡ce pý¡stroj¡ch a tras ch.
 
-## 0.6.0 – Podklady pro SÚRO
+## 0.6.0 - Podklady pro SéRO
 
-- [ ] Dialog metadat po importu s možností odložit vyplnění.
-- [ ] Metadata po jednotlivých úsecích.
-- [ ] Validace proti schválenému exportnímu profilu.
-- [ ] Předvyplněný formulář nebo exportní balíček po ověření se SÚRO.
-- [ ] Evidence revizí a uživatelsky potvrzeného odeslání.
+- [ ] Dialog metadat po importu s mo§nost¡ odlo§it vyplnØn¡.
+- [ ] Metadata po jednotlivìch £sec¡ch.
+- [ ] Validace proti schv len‚mu exportn¡mu profilu.
+- [ ] PýedvyplnØnì formul ý nebo exportn¡ bal¡Ÿek po ovØýen¡ se SéRO.
+- [ ] Evidence reviz¡ a u§ivatelsky potvrzen‚ho odesl n¡.
 
-## 1.0.0 – První stabilní vydání
+## 1.0.0 - Prvn¡ stabiln¡ vyd n¡
 
-- [ ] Dokumentovaný instalační ZIP.
-- [ ] Migrace dat mezi podporovanými verzemi.
-- [ ] Česká uživatelská dokumentace.
-- [ ] Stabilní import, monitoring, mise, úseky a kontrolovaný export.
-- [ ] Ověřený postup pro podporovaný QGIS 3 i aktuální QGIS 4.
+- [ ] Dokumentovanì instalaŸn¡ ZIP.
+- [ ] Migrace dat mezi podporovanìmi verzemi.
+- [ ] ¬esk  u§ivatelsk  dokumentace.
+- [ ] Stabiln¡ import, monitoring, mise, £seky a kontrolovanì export.
+- [ ] OvØýenì postup pro podporovanì QGIS 3 i aktu ln¡ QGIS 4.
 
 ## Po verzi 1.0
 
 - statistiky, grafy, heatmapy a trasy;
 - exporty CSV, GeoJSON, GPX a reporty;
-- další zařízení přes oddělené reader rozhraní;
-- volitelná synchronizace až po samostatném bezpečnostním návrhu.
+- dalç¡ zaý¡zen¡ pýes oddØlen‚ reader rozhran¡;
+- voliteln  synchronizace a§ po samostatn‚m bezpeŸnostn¡m n vrhu.

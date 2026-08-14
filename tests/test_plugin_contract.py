@@ -68,6 +68,7 @@ class PluginContractTest(unittest.TestCase):
             "ui/project_dialog.py",
             "ui/segments_dialog.py",
             "ui/saved_segments_dialog.py",
+            "ui/manual_segment_dialog.py",
             "monitoring/files.py",
             "database/schema.py",
             "database/repository.py",
@@ -108,7 +109,7 @@ class PluginContractTest(unittest.TestCase):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
 
         self.assertIn("SegmentsDialog", source)
-        self.assertIn("Měřicí úseky…", source)
+        self.assertIn("MØýic¡ £seky", source)
         self.assertIn("proposal_focus_requested", source)
         self.assertIn("zoomToActiveLayer()", source)
         self.assertIn("mapCanvas().refresh()", source)
@@ -126,10 +127,23 @@ class PluginContractTest(unittest.TestCase):
         )
 
         self.assertIn("SavedSegmentsDialog", source)
-        self.assertIn("Uložené úseky…", source)
+        self.assertIn("Ulo§en‚ £seky", source)
         self.assertIn("list_segment_positions", source)
         self.assertIn("update_segment", dialog_source)
         self.assertIn("segment_focus_requested", dialog_source)
+
+    def test_manual_time_segment_is_available_from_saved_segments(self):
+        dialog_source = (PLUGIN / "ui/saved_segments_dialog.py").read_text(
+            encoding="utf-8"
+        )
+        manual_source = (PLUGIN / "ui/manual_segment_dialog.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("ManualSegmentDialog", dialog_source)
+        self.assertIn("Nově Łsek podle źasu", dialog_source)
+        self.assertIn("list_mission_recordings", manual_source)
+        self.assertIn("recording_id=recording.recording_id", manual_source)
 
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")

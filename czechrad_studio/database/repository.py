@@ -45,6 +45,20 @@ class StoredImport:
     proposal_count: int
 
 
+@dataclass(frozen=True)
+class CurrentRecording:
+    """One current recording available for manual segment creation."""
+
+    source_log_id: str
+    recording_id: str
+    recording_sequence: int
+    source_name: str
+    logical_date: str
+    start: datetime
+    end: datetime
+    measurement_count: int
+
+
 def _parse_datetime(value: str | None) -> datetime | None:
     return datetime.fromisoformat(value) if value else None
 
@@ -117,7 +131,7 @@ class GeoPackageRepository:
     def create_mission(self, name: str, description: str = "") -> Mission:
         clean_name = name.strip()
         if not clean_name:
-            raise ValueError("Název mise nesmí být prázdný.")
+            raise ValueError("N zev mise nesmĄ bėt pr zdnė.")
         mission_id = str(uuid4())
         now = utc_now_text()
         with self._connection() as connection:
@@ -183,7 +197,7 @@ class GeoPackageRepository:
             (item.device_id, item.device_type) for item in analysis.track.measurements
         }
         if len(devices) != 1:
-            raise ValueError("Denní LOG musí obsahovat právě jedno zařízení.")
+            raise ValueError("Denn¡ LOG mus¡ obsahovat pr vØ jedno zaý¡zen¡.")
         device_serial, device_type = next(iter(devices))
         first_measurement = analysis.track.measurements[0]
         matched_nogps = (
@@ -520,7 +534,7 @@ class GeoPackageRepository:
                 """
                 SELECT p.*,
                        CASE WHEN sr.sequence_no > 1
-                            THEN sr.original_filename || ' (měření ' ||
+                            THEN sr.original_filename || ' (mØýen¡ ' ||
                                  sr.sequence_no || ')'
                             ELSE sr.original_filename END AS original_filename,
                        s.logical_date
@@ -566,7 +580,7 @@ class GeoPackageRepository:
                 f"""
                 SELECT p.*,
                        CASE WHEN sr.sequence_no > 1
-                            THEN sr.original_filename || ' (měření ' ||
+                            THEN sr.original_filename || ' (mØýen¡ ' ||
                                  sr.sequence_no || ')'
                             ELSE sr.original_filename END AS original_filename,
                        s.logical_date
@@ -582,6 +596,51 @@ class GeoPackageRepository:
                 (mission_id,),
             ).fetchall()
         return tuple(self._proposal_from_row(row) for row in rows)
+
+    def list_mission_recordings(
+        self, mission_id: str
+    ) -> tuple[CurrentRecording, ...]:
+        """List current recording ranges which can be split manually."""
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT s.id AS source_log_id, r.recording_id,
+                       sr.sequence_no, sr.original_filename, s.logical_date,
+                       r.started_at_utc, r.ended_at_utc, r.measurement_count
+                FROM mission_source_logs ms
+                JOIN source_logs s ON s.id = ms.source_log_id
+                JOIN source_recordings sr ON sr.source_log_id = s.id
+                JOIN source_log_revisions r
+                    ON r.recording_id = sr.id AND r.is_current = 1
+                WHERE ms.mission_id = ?
+                ORDER BY s.logical_date, r.started_at_utc, sr.sequence_no
+                """,
+                (mission_id,),
+            ).fetchall()
+        result = []
+        for row in rows:
+            start = _parse_datetime(row["started_at_utc"])
+            end = _parse_datetime(row["ended_at_utc"])
+            if start is None or end is None:
+                continue
+            source_name = row["original_filename"]
+            if row["sequence_no"] > 1:
+                source_name += f" (mØýen¡ {row['sequence_no']})"
+            result.append(
+                CurrentRecording(
+                    source_log_id=row["source_log_id"],
+                    recording_id=row["recording_id"],
+                    recording_sequence=row["sequence_no"],
+                    source_name=source_name,
+                    logical_date=row["logical_date"],
+                    start=start,
+                    end=end,
+                    measurement_count=row["measurement_count"],
+                )
+            )
+        return tuple(result)
 
     @staticmethod
     def _recording_for_interval(
@@ -613,7 +672,7 @@ class GeoPackageRepository:
                 candidates.append((overlap, row["recording_id"]))
         if not candidates:
             raise ValueError(
-                "Čas úseku nepatří do žádného aktuálního měření tohoto dne."
+                "¬as £seku nepatý¡ do § dn‚ho aktu ln¡ho mØýen¡ tohoto dne."
             )
         return max(candidates, key=lambda item: item[0])[1]
 
@@ -624,6 +683,7 @@ class GeoPackageRepository:
         end: datetime,
         *,
         mission_id: str | None = None,
+        recording_id: str | None = None,
         segment_type: SegmentType = SegmentType.UNCLASSIFIED,
         title: str = "",
         status: str = "draft",
@@ -636,11 +696,11 @@ class GeoPackageRepository:
         """Create a stable draft segment which survives later LOG revisions."""
 
         if end < start:
-            raise ValueError("Konec úseku nesmí být před jeho začátkem.")
+            raise ValueError("Konec £seku nesm¡ bìt pýed jeho zaŸ tkem.")
         if detector_height_m is not None and detector_height_m < 0:
-            raise ValueError("Výška detektoru nesmí být záporná.")
+            raise ValueError("Vìçka detektoru nesm¡ bìt z porn .")
         if status not in {"draft", "confirmed", "excluded"}:
-            raise ValueError(f"Neznámý stav úseku: {status}")
+            raise ValueError(f"Nezn mì stav £seku: {status}")
         segment_id = str(uuid4())
         now = utc_now_text()
         with self._connection() as connection:
@@ -648,14 +708,36 @@ class GeoPackageRepository:
             if connection.execute(
                 "SELECT 1 FROM source_logs WHERE id = ?", (source_log_id,)
             ).fetchone() is None:
-                raise KeyError(f"Zdrojový LOG {source_log_id} nebyl nalezen.")
+                raise KeyError(f"Zdrojovì LOG {source_log_id} nebyl nalezen.")
             if mission_id is not None and connection.execute(
                 "SELECT 1 FROM missions WHERE id = ?", (mission_id,)
             ).fetchone() is None:
                 raise KeyError(f"Mise {mission_id} nebyla nalezena.")
-            recording_id = self._recording_for_interval(
-                connection, source_log_id, start, end
-            )
+            if recording_id is None:
+                selected_recording_id = self._recording_for_interval(
+                    connection, source_log_id, start, end
+                )
+            else:
+                recording = connection.execute(
+                    """
+                    SELECT started_at_utc, ended_at_utc
+                    FROM source_log_revisions
+                    WHERE source_log_id = ? AND recording_id = ?
+                      AND is_current = 1
+                    """,
+                    (source_log_id, recording_id),
+                ).fetchone()
+                if recording is None:
+                    raise KeyError("Vybran‚ mØýen¡ nebylo nalezeno.")
+                recording_start = _parse_datetime(recording["started_at_utc"])
+                recording_end = _parse_datetime(recording["ended_at_utc"])
+                if recording_start is None or recording_end is None:
+                    raise ValueError("Vybran‚ mØýen¡ nem  platnì Ÿasovì rozsah.")
+                if start < recording_start or end > recording_end:
+                    raise ValueError(
+                        "¬asov‚ hranice £seku mus¡ le§et uvnitý vybran‚ho mØýen¡."
+                    )
+                selected_recording_id = recording_id
             connection.execute(
                 """
                 INSERT INTO measurement_segments
@@ -666,7 +748,7 @@ class GeoPackageRepository:
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    segment_id, source_log_id, recording_id, mission_id,
+                    segment_id, source_log_id, selected_recording_id, mission_id,
                     _utc_timestamp(start), _utc_timestamp(end),
                     segment_type.value, title.strip(), status,
                     int(include_in_suro), detector_height_m,
@@ -695,7 +777,7 @@ class GeoPackageRepository:
         """Atomically accept a current proposal and create a confirmed segment."""
 
         if detector_height_m is not None and detector_height_m < 0:
-            raise ValueError("Výška detektoru nesmí být záporná.")
+            raise ValueError("Vìçka detektoru nesm¡ bìt z porn .")
         segment_id = str(uuid4())
         now = utc_now_text()
         with self._connection() as connection:
@@ -714,12 +796,12 @@ class GeoPackageRepository:
             ).fetchone()
             if row is None:
                 raise KeyError(
-                    "Návrh nebyl nalezen, už byl zpracován nebo nepatří "
-                    "do aktivní mise."
+                    "N vrh nebyl nalezen, u§ byl zpracov n nebo nepatý¡ "
+                    "do aktivn¡ mise."
                 )
             if row["proposal_type"] == ProposalType.RECORDING_GAP.value:
                 raise ValueError(
-                    "Mezera v záznamu je pouze návrh hranice, ne měřicí úsek."
+                    "Mezera v z znamu je pouze n vrh hranice, ne mØýic¡ £sek."
                 )
             connection.execute(
                 """
@@ -768,7 +850,7 @@ class GeoPackageRepository:
                 (utc_now_text(), proposal_id),
             )
             if cursor.rowcount != 1:
-                raise KeyError("Návrh nebyl nalezen nebo už byl zpracován.")
+                raise KeyError("N vrh nebyl nalezen nebo u§ byl zpracov n.")
 
     def list_proposal_positions(
         self, proposal_id: str
@@ -793,7 +875,7 @@ class GeoPackageRepository:
                 (proposal_id,),
             ).fetchone()
             if row is None:
-                raise KeyError("Návrh nebyl nalezen v aktuální revizi LOGu.")
+                raise KeyError("N vrh nebyl nalezen v aktu ln¡ revizi LOGu.")
             positions = connection.execute(
                 """
                 SELECT longitude, latitude FROM measurements
@@ -822,7 +904,7 @@ class GeoPackageRepository:
                 """
                 SELECT ms.*,
                        CASE WHEN sr.sequence_no > 1
-                            THEN sr.original_filename || ' (měření ' ||
+                            THEN sr.original_filename || ' (mØýen¡ ' ||
                                  sr.sequence_no || ')'
                             ELSE sr.original_filename END AS original_filename,
                        s.logical_date
@@ -864,7 +946,7 @@ class GeoPackageRepository:
                 """
                 SELECT ms.*,
                        CASE WHEN sr.sequence_no > 1
-                            THEN sr.original_filename || ' (měření ' ||
+                            THEN sr.original_filename || ' (mØýen¡ ' ||
                                  sr.sequence_no || ')'
                             ELSE sr.original_filename END AS original_filename,
                        s.logical_date
@@ -893,7 +975,7 @@ class GeoPackageRepository:
         """Update user-owned metadata without changing segment boundaries."""
 
         if detector_height_m is not None and detector_height_m < 0:
-            raise ValueError("Výška detektoru nesmí být záporná.")
+            raise ValueError("Věçka detektoru nesmĄ bět z porn .")
         with self._connection() as connection:
             migrate(connection)
             row = connection.execute(
@@ -901,7 +983,7 @@ class GeoPackageRepository:
                 (segment_id,),
             ).fetchone()
             if row is None:
-                raise KeyError("Úsek nebyl nalezen.")
+                raise KeyError("ések nebyl nalezen.")
             connection.execute(
                 """
                 UPDATE measurement_segments
@@ -946,7 +1028,7 @@ class GeoPackageRepository:
                 (segment_id,),
             ).fetchone()
             if row is None:
-                raise KeyError("Úsek nebyl nalezen.")
+                raise KeyError("ések nebyl nalezen.")
             positions = connection.execute(
                 """
                 SELECT m.longitude, m.latitude FROM measurements m

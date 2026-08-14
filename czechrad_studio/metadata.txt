@@ -2,9 +2,9 @@
 name=CzechRad Studio
 qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
-description=Import, správa a příprava radiačních měření CzechRad v QGIS 3 a 4.
-about=Experimentální CzechRad Studio pro QGIS 3.22+ a 4.x načítá denní LOG a NOGPS.LOG, ukládá verzované měření do projektového GeoPackage a organizuje více denních LOGů do misí.
-version=0.5.3
+description=Import, spr va a pý¡prava radiaŸn¡ch mØýen¡ CzechRad v QGIS 3 a 4.
+about=Experiment ln¡ CzechRad Studio pro QGIS 3.22+ a 4.x naŸ¡t  denn¡ LOG a NOGPS.LOG, ukl d  verzovan‚ mØýen¡ do projektov‚ho GeoPackage a organizuje v¡ce denn¡ch LOG… do mis¡.
+version=0.5.4
 author=CzechRad Studio contributors
 email=hobitvacek@users.noreply.github.com
 repository=https://github.com/hobitvacek/CzechRad-Studio
