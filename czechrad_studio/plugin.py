@@ -212,6 +212,11 @@ class CzechRadStudioPlugin:
                 database_path, mission_id
             )
         )
+        self._saved_segments_dialog.unassigned_focus_requested.connect(
+            lambda: self._focus_unassigned_measurements(
+                database_path, mission_id
+            )
+        )
         self._saved_segments_dialog.finished.connect(
             self._saved_segments_dialog_finished
         )
@@ -417,7 +422,51 @@ class CzechRadStudioPlugin:
             "Uložený úsek je v mapě zvýrazněn fialově.",
         )
 
-    def _show_focus_positions(self, positions, layer_name, success_message):
+    def _focus_unassigned_measurements(self, database_path, mission_id):
+        summary = GeoPackageRepository(
+            database_path
+        ).unassigned_mission_measurements(mission_id)
+        if summary.total_count == 0:
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                "Aktivní mise zatím neobsahuje žádná měření.",
+            )
+            return
+        if summary.unassigned_count == 0:
+            self._remove_proposal_focus_layer()
+            self.iface.messageBar().pushSuccess(
+                PLUGIN_NAME,
+                "Všechna aktuální měření jsou již zařazena do úseků.",
+            )
+            return
+        if not summary.positions:
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                PLUGIN_NAME,
+                f"Nezařazených měření: {summary.unassigned_count}. Žádné z "
+                "nich ale nemá platnou polohu pro zobrazení v mapě.",
+            )
+            return
+        self._show_focus_positions(
+            summary.positions,
+            "CzechRad – nezařazená data",
+            f"Modře je zvýrazněno {summary.mapped_count} bodů. "
+            f"Celkem nezařazených měření: {summary.unassigned_count} "
+            f"z {summary.total_count}.",
+            color="0,120,255,215",
+            size="3.2",
+        )
+
+    def _show_focus_positions(
+        self,
+        positions,
+        layer_name,
+        success_message,
+        *,
+        color="210,0,255,210",
+        size="4.0",
+    ):
         self._remove_proposal_focus_layer()
         layer = QgsVectorLayer(
             "Point?crs=EPSG:4326", layer_name, "memory"
@@ -434,8 +483,8 @@ class CzechRadStudioPlugin:
         symbol = QgsMarkerSymbol.createSimple(
             {
                 "name": "circle",
-                "color": "210,0,255,210",
-                "size": "4.0",
+                "color": color,
+                "size": size,
                 "outline_color": "255,255,255,255",
                 "outline_width": "0.6",
             }

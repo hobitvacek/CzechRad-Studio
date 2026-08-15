@@ -74,6 +74,16 @@ class NearestMeasurement:
     distance_m: float
 
 
+@dataclass(frozen=True)
+class UnassignedMeasurements:
+    """Current mission measurements not covered by any user segment."""
+
+    total_count: int
+    unassigned_count: int
+    mapped_count: int
+    positions: tuple[tuple[float, float], ...]
+
+
 def _parse_datetime(value: str | None) -> datetime | None:
     return datetime.fromisoformat(value) if value else None
 
@@ -756,6 +766,53 @@ class GeoPackageRepository:
                 nearest_row["longitude"],
                 nearest_row["latitude"],
             ),
+        )
+
+    def unassigned_mission_measurements(
+        self, mission_id: str
+    ) -> UnassignedMeasurements:
+        """Return current measurements which are not covered by a segment.
+
+        Records without trusted geometry remain part of the counts, while only
+        trusted WGS 84 positions are returned for QGIS highlighting.
+        """
+
+        with self._connection() as connection:
+            migrate(connection)
+            rows = connection.execute(
+                """
+                SELECT m.longitude, m.latitude, m.location_quality,
+                       EXISTS (
+                           SELECT 1 FROM measurement_segments segment
+                           WHERE segment.mission_id = mission_link.mission_id
+                             AND segment.recording_id = revision.recording_id
+                             AND m.measured_at_utc BETWEEN
+                                 segment.started_at_utc
+                                 AND segment.ended_at_utc
+                       ) AS is_assigned
+                FROM mission_source_logs mission_link
+                JOIN source_log_revisions revision
+                    ON revision.source_log_id = mission_link.source_log_id
+                   AND revision.is_current = 1
+                JOIN measurements m ON m.revision_id = revision.id
+                WHERE mission_link.mission_id = ?
+                ORDER BY m.measured_at_utc, m.sequence_no
+                """,
+                (mission_id,),
+            ).fetchall()
+        unassigned = tuple(row for row in rows if not row["is_assigned"])
+        positions = tuple(
+            (row["longitude"], row["latitude"])
+            for row in unassigned
+            if row["location_quality"] == LocationQuality.VALID.value
+            and row["longitude"] is not None
+            and row["latitude"] is not None
+        )
+        return UnassignedMeasurements(
+            total_count=len(rows),
+            unassigned_count=len(unassigned),
+            mapped_count=len(positions),
+            positions=positions,
         )
 
     @staticmethod

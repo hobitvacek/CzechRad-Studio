@@ -4,6 +4,10 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Added blue map highlighting and coverage counts for current mission
+  measurements which are not yet covered by any user segment.
+- Kept unassigned NOGPS records in the summary while mapping only trusted
+  positions, so missing geometry never silently removes radiation records.
 - Added two-click map selection for measurement-segment boundaries with
   WGS 84 coordinate transformation and snapping to trusted stored points.
 - Locked the second map boundary to the recording selected by the first click,
