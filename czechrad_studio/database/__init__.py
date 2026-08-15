@@ -6,6 +6,7 @@ from .repository import (
     ImportDisposition,
     NearestMeasurement,
     StoredImport,
+    UnassignedMeasurements,
 )
 from .schema import SCHEMA_VERSION
 
@@ -16,4 +17,5 @@ __all__ = [
     "NearestMeasurement",
     "SCHEMA_VERSION",
     "StoredImport",
+    "UnassignedMeasurements",
 ]

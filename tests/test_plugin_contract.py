@@ -161,6 +161,21 @@ class PluginContractTest(unittest.TestCase):
         self.assertIn("nearest_mission_measurement", repository_source)
         self.assertIn("recording_id=first.recording_id", plugin_source)
 
+    def test_unassigned_measurements_can_be_highlighted(self):
+        plugin_source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
+        dialog_source = (PLUGIN / "ui/saved_segments_dialog.py").read_text(
+            encoding="utf-8"
+        )
+        repository_source = (PLUGIN / "database/repository.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("Ukázat nezařazená data", dialog_source)
+        self.assertIn("unassigned_focus_requested", dialog_source)
+        self.assertIn("_focus_unassigned_measurements", plugin_source)
+        self.assertIn("unassigned_mission_measurements", repository_source)
+        self.assertIn("EXISTS (", repository_source)
+
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
 

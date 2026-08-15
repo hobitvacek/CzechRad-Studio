@@ -528,6 +528,37 @@ class GeoPackageRepositoryTest(unittest.TestCase):
         )
         self.assertEqual(stored.recording_id, filtered.recording_id)
 
+    def test_unassigned_measurements_exclude_saved_segment_ranges(self):
+        mission = self.repository.create_mission("Pokrytí úseky")
+        analysis = analyze_log_files(self.track)
+        stored = self.repository.store_import(
+            analysis, self.track, mission_id=mission.id
+        )
+        before = self.repository.unassigned_mission_measurements(mission.id)
+        target = analysis.geometry_measurements[0]
+
+        self.assertEqual(stored.measurement_count, before.total_count)
+        self.assertEqual(stored.measurement_count, before.unassigned_count)
+        self.assertEqual(
+            len(analysis.geometry_measurements), before.mapped_count
+        )
+
+        self.repository.create_segment(
+            stored.source_log_id,
+            target.timestamp,
+            target.timestamp,
+            mission_id=mission.id,
+            recording_id=stored.recording_id,
+            segment_type=SegmentType.WALKING,
+            title="Jeden zařazený bod",
+            status="confirmed",
+        )
+        after = self.repository.unassigned_mission_measurements(mission.id)
+
+        self.assertEqual(before.total_count, after.total_count)
+        self.assertEqual(before.unassigned_count - 1, after.unassigned_count)
+        self.assertEqual(before.mapped_count - 1, after.mapped_count)
+
     def test_tracks_mission_range_and_stores_no_raw_gps_lines(self):
         mission = self.repository.create_mission("Audit")
         analysis = analyze_log_files(self.track)

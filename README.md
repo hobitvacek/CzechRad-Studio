@@ -6,7 +6,7 @@ Projekt navazuje na [Radiation ToolBox Plugin](https://gitlab.com/opengeolabs/ra
 
 ## Stav projektu
 
-Aktuální experimentální verze `0.5.5` obsahuje použitelný import, monitoring, projektovou databázi, editor měřicích úseků a společnou podporu Qt5/Qt6:
+Aktuální experimentální verze `0.5.6` obsahuje použitelný import, monitoring, projektovou databázi, editor měřicích úseků a společnou podporu Qt5/Qt6:
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
@@ -33,6 +33,8 @@ Aktuální experimentální verze `0.5.5` obsahuje použitelný import, monitori
   několika karet se stejným denním názvem;
 - ruční výběr začátku a konce úseku dvěma kliknutími do mapy; druhá hranice
   se bezpečně připne pouze ke stejnému záznamu jako první;
+- modré zvýraznění měření, která ještě nejsou zařazena do žádného úseku,
+  včetně souhrnu nezobrazených NOGPS záznamů;
 - modulární adresáře pro import, monitoring, databázi, mise, úseky a export SÚRO;
 - počáteční architektura, vize a roadmapa;
 - základní testy kontraktu pluginu bez závislosti na QGIS.

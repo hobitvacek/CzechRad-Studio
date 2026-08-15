@@ -1,4 +1,4 @@
-# Jednoduchý návod k CzechRad Studio 0.5.5
+# Jednoduchý návod k CzechRad Studio 0.5.6
 
 Tento návod je určen pro testovací verzi pluginu CzechRad Studio. Plugin je
 stále experimentální. Zdrojové soubory LOG nikdy úmyslně neupravuje; při
@@ -7,7 +7,7 @@ automatickém importu je pouze kopíruje do zvoleného místního archivu.
 ## 1. Co je potřeba
 
 - QGIS 3.22 nebo novější, případně QGIS 4.x;
-- instalační ZIP `czechrad_studio-0.5.5-test.zip`;
+- instalační ZIP `czechrad_studio-0.5.6-test.zip`;
 - denní soubor zařízení, například `07960808.LOG`;
 - volitelně odpovídající `NOGPS.LOG` ze stejné karty;
 - pro projektovou databázi libovolnou zapisovatelnou složku na počítači.
@@ -19,7 +19,7 @@ Plugin používá stejný balíček pro Windows a Linux i pro QGIS 3 a QGIS 4.
 1. Spusť QGIS.
 2. Otevři **Zásuvné moduly → Spravovat a instalovat zásuvné moduly**.
 3. Zvol **Instalovat ze ZIP**.
-4. Vyber `czechrad_studio-0.5.5-test.zip` a potvrď instalaci.
+4. Vyber `czechrad_studio-0.5.6-test.zip` a potvrď instalaci.
 5. Pokud se objeví upozornění na experimentální nebo neověřený plugin,
    pokračuj pouze tehdy, pokud ZIP pochází z repozitáře CzechRad Studio.
 6. V nabídce **Zásuvné moduly** se objeví položka **CzechRad Studio**.
@@ -91,6 +91,13 @@ V nabídce **CzechRad Studio → Uložené úseky…** klikni na
 Kliknutí vzdálené více než 500 metrů od měřené trasy se odmítne. V takovém
 případě mapu přibliž a klikni znovu blíže k bodům.
 
+### Nezařazená data
+
+V okně **Uložené úseky** klikni na **Ukázat nezařazená data**. Plugin modře
+zvýrazní platné GPS body aktuální mise, které dosud neleží v žádném uloženém
+úseku. Stavová zpráva uvede také celkový počet nezařazených měření. Do tohoto
+počtu patří i NOGPS záznamy bez polohy, přestože je nelze vykreslit do mapy.
+
 ## 7. Co zatím testovací verze neumí
 
 - sama neodesílá data do SÚRO;
@@ -109,8 +116,9 @@ Tester by měl ověřit:
 5. vytvoření úseku podle času;
 6. vytvoření úseku dvěma kliknutími v mapě;
 7. uložení a pozdější úpravu metadat úseku;
-8. zavření a opětovné otevření QGIS a kontrolu uložených dat;
-9. volitelně monitoring samostatné testovací složky nebo karty.
+8. zobrazení nezařazených bodů před vytvořením úseku a jejich úbytek po něm;
+9. zavření a opětovné otevření QGIS a kontrolu uložených dat;
+10. volitelně monitoring samostatné testovací složky nebo karty.
 
 Při hlášení chyby uveď operační systém, přesnou verzi QGIS, verzi pluginu,
 provedený krok a celý text chyby. Pomůže také snímek obrazovky. LOG obsahující
@@ -122,4 +130,3 @@ soukromá místa uživatele.
 - [Zdrojový kód a dokumentace](https://github.com/hobitvacek/CzechRad-Studio)
 - [Hlášení chyb](https://github.com/hobitvacek/CzechRad-Studio/issues)
 - [Testovací vydání](https://github.com/hobitvacek/CzechRad-Studio/releases)
-

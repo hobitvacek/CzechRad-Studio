@@ -37,6 +37,7 @@ class SavedSegmentsDialog(QDialog):
 
     segment_focus_requested = pyqtSignal(object)
     map_segment_requested = pyqtSignal()
+    unassigned_focus_requested = pyqtSignal()
 
     def __init__(self, database_path, mission_id: str, parent=None):
         super().__init__(parent)
@@ -102,6 +103,10 @@ class SavedSegmentsDialog(QDialog):
         self.new_button.clicked.connect(self._new_segment)
         self.map_button = QPushButton("Nový úsek z mapy…", self)
         self.map_button.clicked.connect(self.map_segment_requested.emit)
+        self.unassigned_button = QPushButton("Ukázat nezařazená data", self)
+        self.unassigned_button.clicked.connect(
+            self.unassigned_focus_requested.emit
+        )
         self.focus_button = QPushButton("Ukázat v mapě", self)
         self.focus_button.clicked.connect(self._focus)
         self.save_button = QPushButton("Uložit změny", self)
@@ -111,6 +116,7 @@ class SavedSegmentsDialog(QDialog):
         buttons = QHBoxLayout()
         buttons.addWidget(self.new_button)
         buttons.addWidget(self.map_button)
+        buttons.addWidget(self.unassigned_button)
         buttons.addWidget(self.focus_button)
         buttons.addWidget(self.save_button)
         buttons.addStretch(1)
@@ -161,6 +167,7 @@ class SavedSegmentsDialog(QDialog):
         )
         self.new_button.setEnabled(has_recordings)
         self.map_button.setEnabled(has_recordings)
+        self.unassigned_button.setEnabled(has_recordings)
         self.focus_button.setEnabled(enabled)
         self.save_button.setEnabled(enabled)
         if enabled:
