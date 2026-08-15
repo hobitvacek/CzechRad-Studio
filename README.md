@@ -68,7 +68,7 @@ začátek, červený konec a následný formulář umožní doplnit metadata ús
 - [Roadmapa](docs/ROADMAP.md)
 - [Návrh exportu pro SÚRO](docs/SURO_EXPORT.md)
 - [Jednoduchý uživatelský návod](docs/UZIVATELSKY_NAVOD.md)
-- [Testovací ZIP CzechRad Studio 0.5.5](test-builds/czechrad_studio-0.5.5-test.zip)
+- [Testovací ZIP CzechRad Studio 0.5.6](test-builds/czechrad_studio-0.5.6-test.zip)
 
 ## Licence a původ
 
