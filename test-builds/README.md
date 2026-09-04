@@ -20,5 +20,13 @@ zásuvné moduly → Instalovat ze ZIP**.
 - ověření: 82 automatických testů a praktický test v QGIS
 - kompatibilita: QGIS 3.22+ / Qt 5 a QGIS 4.x / Qt 6, Windows a Linux
 
+## CzechRad Studio 0.6.0
+
+- soubor: [`czechrad_studio-0.6.0-test.zip`](czechrad_studio-0.6.0-test.zip)
+- velikost: 65 034 bajtů
+- SHA-256: `E411B22E93AC4DB29B01F322B742F47F37A00F93CE3328992ADD99EDBB4ADE92`
+- ověření: 87 automatických testů a praktický test v QGIS
+- kompatibilita: QGIS 3.22+ / Qt 5 a QGIS 4.x / Qt 6, Windows a Linux
+
 Balíček je experimentální. Před veřejným sdílením LOGů zkontroluj, zda jejich
 GPS souřadnice neobsahují citlivou trasu nebo soukromá místa.
