@@ -6,7 +6,7 @@ Projekt navazuje na [Radiation ToolBox Plugin](https://gitlab.com/opengeolabs/ra
 
 ## Stav projektu
 
-Aktuální experimentální verze `0.5.6` obsahuje použitelný import, monitoring, projektovou databázi, editor měřicích úseků a společnou podporu Qt5/Qt6:
+Aktuální experimentální verze `0.6.0` obsahuje použitelný import, monitoring, projektovou databázi, editor měřicích úseků a společnou podporu Qt5/Qt6:
 
 - platná kostra Python pluginu s `classFactory()`;
 - import denního LOGu a volitelného NOGPS.LOG do QGIS;
@@ -35,6 +35,8 @@ Aktuální experimentální verze `0.5.6` obsahuje použitelný import, monitori
   se bezpečně připne pouze ke stejnému záznamu jako první;
 - modré zvýraznění měření, která ještě nejsou zařazena do žádného úseku,
   včetně souhrnu nezobrazených NOGPS záznamů;
+- místní kontrolu základních údajů úseků připravovaných pro SÚRO, bez
+  automatického odesílání nebo změny zdrojových LOGů;
 - modulární adresáře pro import, monitoring, databázi, mise, úseky a export SÚRO;
 - počáteční architektura, vize a roadmapa;
 - základní testy kontraktu pluginu bez závislosti na QGIS.
@@ -67,6 +69,7 @@ začátek, červený konec a následný formulář umožní doplnit metadata ús
 - [Architektura](docs/ARCHITECTURE.md)
 - [Roadmapa](docs/ROADMAP.md)
 - [Návrh exportu pro SÚRO](docs/SURO_EXPORT.md)
+- [Budoucí referenční datové vrstvy](docs/EXTERNAL_DATA.md)
 - [Jednoduchý uživatelský návod](docs/UZIVATELSKY_NAVOD.md)
 - [Testovací ZIP CzechRad Studio 0.5.6](test-builds/czechrad_studio-0.5.6-test.zip)
 

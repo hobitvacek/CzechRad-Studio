@@ -176,6 +176,20 @@ class PluginContractTest(unittest.TestCase):
         self.assertIn("unassigned_mission_measurements", repository_source)
         self.assertIn("EXISTS (", repository_source)
 
+    def test_saved_segments_show_suro_readiness(self):
+        dialog_source = (PLUGIN / "ui/saved_segments_dialog.py").read_text(
+            encoding="utf-8"
+        )
+        readiness_source = (PLUGIN / "suro/readiness.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("Připravenost", dialog_source)
+        self.assertIn("assess_mission", dialog_source)
+        self.assertIn("detector_height_m", readiness_source)
+        self.assertIn("detector_orientation", readiness_source)
+        self.assertIn("route_description", readiness_source)
+
     def test_zoom_uses_qgis_crs_aware_action(self):
         source = (PLUGIN / "plugin.py").read_text(encoding="utf-8")
 

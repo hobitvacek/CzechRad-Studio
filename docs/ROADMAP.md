@@ -54,7 +54,8 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 ## 0.6.0 – Podklady pro SÚRO
 
 - [ ] Dialog metadat po importu s možností odložit vyplnění.
-- [ ] Metadata po jednotlivých úsecích.
+- [x] Metadata po jednotlivých úsecích.
+- [x] Místní kontrola chybějících základních údajů bez síťového odesílání.
 - [ ] Validace proti schválenému exportnímu profilu.
 - [ ] Předvyplněný formulář nebo exportní balíček po ověření se SÚRO.
 - [ ] Evidence revizí a uživatelsky potvrzeného odeslání.
@@ -72,4 +73,6 @@ Roadmapa popisuje záměr, nikoli závazné termíny. Každá verze musí projí
 - statistiky, grafy, heatmapy a trasy;
 - exporty CSV, GeoJSON, GPX a reporty;
 - další zařízení přes oddělené reader rozhraní;
+- volitelné referenční vrstvy Safecast, SÚJB MonRas/SVZ a PAA podle
+  [samostatného návrhu](EXTERNAL_DATA.md);
 - volitelná synchronizace až po samostatném bezpečnostním návrhu.
