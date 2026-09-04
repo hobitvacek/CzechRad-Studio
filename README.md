@@ -71,7 +71,7 @@ začátek, červený konec a následný formulář umožní doplnit metadata ús
 - [Návrh exportu pro SÚRO](docs/SURO_EXPORT.md)
 - [Budoucí referenční datové vrstvy](docs/EXTERNAL_DATA.md)
 - [Jednoduchý uživatelský návod](docs/UZIVATELSKY_NAVOD.md)
-- [Testovací ZIP CzechRad Studio 0.5.6](test-builds/czechrad_studio-0.5.6-test.zip)
+- [Testovací ZIP CzechRad Studio 0.6.0](test-builds/czechrad_studio-0.6.0-test.zip)
 
 ## Licence a původ
 
