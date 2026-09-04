@@ -25,6 +25,7 @@ from qgis.PyQt.QtWidgets import (
 from ..database import GeoPackageRepository
 from ..qt_compat import DIALOG_ACCEPTED, exec_dialog
 from ..segments import SegmentType
+from ..suro import assess_mission
 from .manual_segment_dialog import ManualSegmentDialog
 from .segments_dialog import SEGMENT_TYPES, _enum
 
@@ -50,9 +51,12 @@ class SavedSegmentsDialog(QDialog):
         self.resize(980, 650)
 
         self.summary_label = QLabel(self)
-        self.table = QTableWidget(0, 7, self)
+        self.table = QTableWidget(0, 8, self)
         self.table.setHorizontalHeaderLabels(
-            ("Datum", "Od", "Do", "Typ", "Název", "SÚRO", "Soubor")
+            (
+                "Datum", "Od", "Do", "Typ", "Název", "SÚRO",
+                "Připravenost", "Soubor",
+            )
         )
         self.table.setSelectionMode(
             _enum(QAbstractItemView, "SelectionMode", "SingleSelection")
@@ -140,6 +144,10 @@ class SavedSegmentsDialog(QDialog):
 
     def _reload(self, selected_id=None):
         self.segments = self.repository.list_mission_segments(self.mission_id)
+        readiness = assess_mission(self.segments)
+        readiness_by_id = {
+            result.segment_id: result for result in readiness.results
+        }
         self.table.setRowCount(len(self.segments))
         selected_row = 0
         for row_index, segment in enumerate(self.segments):
@@ -152,15 +160,22 @@ class SavedSegmentsDialog(QDialog):
                 SEGMENT_LABELS.get(segment.segment_type, segment.segment_type.value),
                 segment.title,
                 "Ano" if segment.include_in_suro else "Ne",
+                readiness_by_id[segment.id].label,
                 segment.source_name or "",
             )
             for column, value in enumerate(values):
                 self.table.setItem(row_index, column, QTableWidgetItem(value))
-        self.summary_label.setText(
-            f"Uložené úseky: {len(self.segments)}."
-            if self.segments
-            else "Aktivní mise zatím nemá žádné potvrzené úseky."
-        )
+        if self.segments:
+            self.summary_label.setText(
+                f"Uložené úseky: {len(self.segments)}. Pro SÚRO vybráno: "
+                f"{readiness.included_count}, připraveno: "
+                f"{readiness.ready_count}, nutno doplnit: "
+                f"{readiness.incomplete_count}."
+            )
+        else:
+            self.summary_label.setText(
+                "Aktivní mise zatím nemá žádné potvrzené úseky."
+            )
         enabled = bool(self.segments)
         has_recordings = bool(
             self.repository.list_mission_recordings(self.mission_id)
@@ -220,7 +235,23 @@ class SavedSegmentsDialog(QDialog):
         self.route_edit.setText(segment.route_description)
         self.notes_edit.setPlainText(segment.notes)
         self.suro_check.setChecked(segment.include_in_suro)
-        self.status_label.setText("")
+        result = next(
+            item
+            for item in assess_mission((segment,)).results
+            if item.segment_id == segment.id
+        )
+        if not result.included:
+            self.status_label.setText(
+                "Tento úsek není vybrán pro přípravu podkladů SÚRO."
+            )
+        elif result.ready:
+            self.status_label.setText(
+                "Úsek má vyplněné základní údaje pro budoucí kontrolu SÚRO."
+            )
+        else:
+            self.status_label.setText(
+                "Pro SÚRO doplň: " + ", ".join(result.missing) + "."
+            )
 
     def _focus(self):
         segment = self._selected()

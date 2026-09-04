@@ -4,6 +4,11 @@ Významné změny budou dokumentovány v tomto souboru. Projekt používá [Sema
 
 ## [Unreleased]
 
+- Added a local SÚRO readiness check for user segments, including explicit
+  reporting of missing movement type, detector height, orientation and route
+  description.
+- Documented Safecast, SÚJB MonRas/SVZ and PAA as deferred optional reference
+  layers; no external data source is contacted by the plugin yet.
 - Added blue map highlighting and coverage counts for current mission
   measurements which are not yet covered by any user segment.
 - Kept unassigned NOGPS records in the summary while mapping only trusted
